@@ -23,49 +23,42 @@ import java.io.*;
  * Stores pattern data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Pattern.java,v 1.2 2000/10/01 17:07:22 fredde Exp $
+ * @version $Id: Pattern.java,v 1.3 2000/10/07 13:50:49 fredde Exp $
  */
 class Pattern {
-	private int channels = 0;
 	private int nrows = 0;
-	protected byte[] data;
+	int[] data;
 
-	public Pattern(int channels, BufferedInputStream in)
+	public Pattern(BufferedInputStream in)
 		throws IOException
 	{
-		this.channels = channels;
-
 		// Pattern header length
-		byte b[] = new byte[4];
-		int ih[];
-		in.read(b);
+		byte b[] = Xm.read(in, 4);
 
 		// Packing type (always 0)
 		in.read();
 
 		// Number of rows in pattern (1...256)
-		b = new byte[2];
-		ih = new int[2];
-		in.read(b);
+		b = Xm.read(in, 2);
+		int[] ih = new int[2];
 		ih[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
 		ih[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
 		nrows = (ih[0] << 0) + (ih[1] << 8);
 
 		// Packed patterndata size
-		b = new byte[2];
-		in.read(b);
+		b = Xm.read(in, 2);
 		ih[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
 		ih[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
 		int size = (ih[0] << 0) + (ih[1] << 8);
 
-		data = new byte[size];
 		if (size == 0) {
+			data = new int[0];
 			return;
 		}
-
-		int read = in.read(data);
-		while (read != data.length) {
-			read += in.read(data, read, data.length - read);
+		b = Xm.read(in, size);
+		data = new int[size];
+		for (int i = 0; i < size; i++) {
+			data[i] = b[i];
 		}
 	}
 
@@ -85,6 +78,10 @@ class Pattern {
 /*
  * ChangeLog:
  * $Log: Pattern.java,v $
+ * Revision 1.3  2000/10/07 13:50:49  fredde
+ * Fixed to read in correctly. No need to know how
+ * many channels the xm have.
+ *
  * Revision 1.2  2000/10/01 17:07:22  fredde
  * removed unused stuff
  *
