@@ -1,5 +1,5 @@
 /* Channel.java - Handles a channel
- * Copyright (C) 2000-2002 Fredrik Ehnbom
+ * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.14 2003/08/23 07:41:19 fredde Exp $
+ * @version $Id: Channel.java,v 1.15 2003/09/01 09:07:30 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -35,12 +35,6 @@ class Channel {
 	}
 
 	int currentNote		= 0;
-
-
-
-
-	int timer = 0;
-
 
 	final int skip(Pattern pattern, int patternpos) {
 		int check = pattern.data[patternpos++];
@@ -100,9 +94,7 @@ class Channel {
 
 		em.currentEffect = -1;
 
-		if (newEffect != -1) {
-			newNote = em.setEffect(newEffect, newEffectParam, newNote);
-		}
+		newNote = em.setEffect(newEffect, newEffectParam, newNote);
 
 		if (newNote != -1) {
 			if (newNote == 97) {
@@ -113,17 +105,19 @@ class Channel {
 			}
 		}
 
+		em.setVolume(newVolume);
 
-		if (newVolume != -1) {
-			em.setVolume(newVolume);
-		}
+//		if (newNote != -1 && newNote != 97 && newVolume < 0x10) {
+//			im.currentVolume = 64;
+//			System.out.println
+//		}
 
 		return patternpos;
 	}
 
 	public final void updateTick() {
 		em.updateEffects();
-		im.updateVolumes();
+		im.update();
 	}
 
 	final void play(int[] buffer, int off, int len) {
@@ -133,6 +127,9 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.15  2003/09/01 09:07:30  fredde
+ * fixes
+ *
  * Revision 1.14  2003/08/23 07:41:19  fredde
  * gets new note from effectmanager
  *
