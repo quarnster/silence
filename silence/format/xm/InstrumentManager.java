@@ -1,4 +1,4 @@
-/* $Id: InstrumentManager.java,v 1.3 2003/08/22 12:39:07 fredde Exp $
+/* $Id: InstrumentManager.java,v 1.4 2003/08/23 07:35:25 fredde Exp $
  * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ package org.gjt.fredde.silence.format.xm;
  * This class handles the playing of an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class InstrumentManager {
 	Xm		xm;
@@ -47,12 +47,14 @@ public class InstrumentManager {
 
 
 	private int	currentNote = 0;
-	int	currentPitch = 0;
+	private int	currentPitch = 0;
 	private int	currentPos = 0;
 
 	private final float volumeScale = 0.25f;
 
 	boolean active = false;
+	boolean release = false;
+	int porta = 0;
 
 	public InstrumentManager(Xm xm) {
 		this.xm = xm;
@@ -67,11 +69,14 @@ public class InstrumentManager {
 		active = false;
 	}
 
-	final double calcPitch(int note) {
+	final int getPeriod(int note) {
 		if (currentInstrument == null || currentInstrument.sample.length == 0) return 0;
 		note += (currentInstrument.sample[0].relativeNote - 1);
 
-		int period = (10*12*16*4) - (note*16*4) - (currentInstrument.sample[0].fineTune / 2);
+		return  (10*12*16*4) - (note*16*4) - (currentInstrument.sample[0].fineTune / 2) + porta;
+	}
+	final double calcPitch(int note) {
+		int period = getPeriod(note);
 
 		double freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
 		double pitch = (freq / (double) xm.deviceSampleRate);
@@ -80,7 +85,7 @@ public class InstrumentManager {
 	}
 
 	public void release() {
-		currentNote = 97;
+		release = true;
 	}
 
 	public void setNote(int note) {
@@ -90,24 +95,33 @@ public class InstrumentManager {
 
 	public void playNote(int note) {
 		if (currentInstrument == null || currentInstrument.sample.length == 0) return;
+		porta = 0;
 		setNote(note);
 		trigger();
 	}
 
+	public void setPosition(int position) {
+		if (currentInstrument != null && position < currentInstrument.sample[0].sampleData.length) {
+			currentPos = position << 10;
+		}
+	}
+
 	public void trigger() {
+		porta = 0;
+		release = false;
 		currentPos = 0;
 		active = true;
 		currentVolume = 64;
 		fadeOutVol = 65536;
 
-		if (currentInstrument.volumeEnvelopePoints.length != 0) {
+		if (currentInstrument.volumeEnvelopePoints.length != 0 && ((currentInstrument.volType & 0x1) != 0)) {
 			volEnv		= currentInstrument.volumeEnvelopePoints[0].y;
 			volEnvPos	= 0;
 			volEnvK		= currentInstrument.volumeEnvInfo[volEnvPos].y;
 			volEnvLength	= (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
 			volEnvSustain	= currentInstrument.volSustain;
 			volEnvType	= currentInstrument.volType;
-			useVolEnv	= ((volEnvType & 0x1) != 0);
+			useVolEnv	= true;
 
 			if ((volEnvType & 0x4) != 0)
 				volEnvLoopLen = currentInstrument.volLoopEnd;
@@ -142,7 +156,7 @@ public class InstrumentManager {
 	}
 
 	public void play(int[] buffer, int off, int len) {
-		if (!active/* || currentNote == 0 || finalVol < 0.01*/) return;
+		if (!active || currentInstrument == null/* || currentNote == 0 || finalVol < 0.01*/) return;
 		Sample s = currentInstrument.sample[0];
 
 
@@ -187,7 +201,7 @@ public class InstrumentManager {
 		if (currentInstrument != null && currentInstrument.sample.length > 0) rowVol *= (currentInstrument.sample[0].volume / 64f);
 		finalVol = rowVol;
 
-		if (currentNote == 97) {
+		if (release) {
 			finalVol *= ((float) fadeOutVol / 65536);
 			fadeOutVol -= currentInstrument.fadeoutVolume;
 			if (fadeOutVol <= 10) {
@@ -199,7 +213,7 @@ public class InstrumentManager {
 		if (xm.globalVolume != 64) finalVol *= ((double) xm.globalVolume / 64);
 
 		if (useVolEnv) {
-			if (currentNote == 97 && volEnvLength != -1) {
+			if (release && volEnvLength != -1) {
 				volEnv += volEnvK;
 				if (volEnvLength <= 0) {
 					volEnvPos++;
@@ -262,9 +276,6 @@ public class InstrumentManager {
 				}
 				volEnvLength--;
 			}
-		} else if (currentNote == 97) {
-			active = false;
-			return;
 		}
 	}
 
@@ -272,6 +283,9 @@ public class InstrumentManager {
 /*
  * ChangeLog:
  * $Log: InstrumentManager.java,v $
+ * Revision 1.4  2003/08/23 07:35:25  fredde
+ * porta implemented, volumeenvelope fixes, release fixes
+ *
  * Revision 1.3  2003/08/22 12:39:07  fredde
  * volume envelopfix
  *
