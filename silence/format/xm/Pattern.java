@@ -23,7 +23,7 @@ import java.io.*;
  * Stores pattern data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Pattern.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
+ * @version $Id: Pattern.java,v 1.2 2000/10/01 17:07:22 fredde Exp $
  */
 class Pattern {
 	private int channels = 0;
@@ -37,6 +37,7 @@ class Pattern {
 
 		// Pattern header length
 		byte b[] = new byte[4];
+		int ih[];
 		in.read(b);
 
 		// Packing type (always 0)
@@ -44,187 +45,27 @@ class Pattern {
 
 		// Number of rows in pattern (1...256)
 		b = new byte[2];
+		ih = new int[2];
 		in.read(b);
-		nrows = (int) ((b[0] < 0) ? 256 + b[0] : b[0]);
+		ih[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+		ih[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+		nrows = (ih[0] << 0) + (ih[1] << 8);
 
 		// Packed patterndata size
 		b = new byte[2];
 		in.read(b);
-		int size = (int) ((b[0] < 0) ? 256 + b[0] : b[0]);
+		ih[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+		ih[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+		int size = (ih[0] << 0) + (ih[1] << 8);
 
 		data = new byte[size];
 		if (size == 0) {
 			return;
 		}
 
-//		int read = in.read(data);
-//		while (read != data.length) {
-//			read += in.read(data, read, data.length - read);
-//		}
-
-		// print the not info in colums like ft2 does.
-/*
-		System.out.print("    ");
-
-		for (int i = 1; i <= channels; i++) {
-			if (i < 10) {
-				System.out.print("   --0" + i + "--     ** ");
-			} else {
-				System.out.print("   --" + i + "--     ** ");
-			}
-		}
-*/
-
-
-		// Packed pattern data
-		for (int i = 0; i < nrows; i++) {
-			// print the not info in colums like ft2 does.
-/*
-			if (i < 10) {
-				System.out.print("\n00" + i + " ");
-			} else if (i < 100) {
-				System.out.print("\n0" + i + " ");
-			} else {
-				System.out.print("\n" + i + " ");
-			}
-*/
-
-
-			for (int j = 0; j < channels; j++) {
-//				printNote(in);
-				readNote(in);
-			}
-		}
-	}
-
-	/**
-	 * Checks if the bit "bit" is set in byte "b"
-	 *
-	 * @param b The byte
-	 * @param bit The bit to check
-	 */
-	public static boolean isSet(int b, int bit) {
-		// the bits are in order 7 -> 0
-		bit = 7 - bit;
-		int mask = 0x080;
-		mask >>= bit;
-
-		return ( (( b & mask) != 0) ? true : false);
-	}
-
-	private void readNote(BufferedInputStream in)
-		throws IOException
-	{
-		int i = in.read();
-
-		if (isSet(i, 7)) {
-			// note follows
-			if (isSet(i, 0)) {
-				in.read();
-			}
-
-			// instrument follows
-			if (isSet(i, 1)) {
-				in.read();
-			}
-
-			// volume follows
-			if (isSet(i, 2)) {
-				in.read();
-			}
-
-			// effect follows
-			if (isSet(i, 3)) {
-				in.read();
-			}
-
-			// effect parameter follows
-			if (isSet(i, 4)) {
-				in.read();
-			}
-		} else {
-			in.read();
-			in.read();
-			in.read();
-			in.read();
-		}
-	}
-
-	private void printNote(BufferedInputStream in)
-		throws IOException
-	{
-		int b  = in.read();
-
-		if (isSet(b, 7)) {
-			if (isSet(b, 0)) {
-				System.out.print(translateNote(in.read()));
-			} else {
-				System.out.print("---");
-			}
-
-			if (isSet(b, 1)) {
-				String str = Integer.toHexString(in.read());
-
-				if (str.length() == 2) {
-					System.out.print(" " + str);
-				} else {
-					System.out.print("  " + str);
-				}
-			} else {
-				System.out.print(" --");
-			}
-
-			if (isSet(b, 2)) {
-				int t = in.read();
-
-				if ( t < 0 ) {
-					t = 256 - t;
-				}
-
-				if (t >= 10 && t <= 50) {
-					System.out.print(" " + t);
-				} else if (t >= 192 && t <= 208) {
-					System.out.print(" p" + Integer.toHexString((t - 192)));
-				} else {
-					System.out.print(" " + t);
-				}
-			} else {
-				System.out.print(" --");
-			}
-
-			if (isSet(b, 3)) {
-				System.out.print(" " + Integer.toHexString(in.read()));
-			} else {
-				System.out.print(" 0");
-			}
-
-			if (isSet(b, 4)) {
-				String str = "" + in.read();
-
-				if (str.length() == 2) {
-					System.out.print(str + " ** ");
-				} else {
-					System.out.print(str + "0 ** ");
-				}
-			} else {
-				System.out.print("00 ** ");
-			}
-		} else {
-			System.out.print(translateNote(b));
-			System.out.print(" " + in.read());
-			String str = Integer.toHexString(in.read());
-			if (str.length() == 2) {
-				System.out.print(" " + str);
-			} else {
-				System.out.print("  " + str);
-			}
-			System.out.print(" " + in.read());
-			str = "" + in.read();
-			if (str.length() == 2) {
-				System.out.print(str + " ** ");
-			} else {
-				System.out.print(str + "0 ** ");
-			}
+		int read = in.read(data);
+		while (read != data.length) {
+			read += in.read(data, read, data.length - read);
 		}
 	}
 
@@ -240,19 +81,14 @@ class Pattern {
 		"C-7", "C#7", "D-7", "D#7", "E-7", "F-7", "F#7", "G-7", "G#7", "A-7", "A#7", "B-7",
 		"[-]"
 	};
-
-	private String translateNote(int i) {
-		if (i < 0) {
-			return "err";
-		} else {
-			return notes[i];
-		}
-	}
 }
 /*
  * ChangeLog:
  * $Log: Pattern.java,v $
- * Revision 1.1  2000/09/25 16:34:33  fredde
- * Initial revision
+ * Revision 1.2  2000/10/01 17:07:22  fredde
+ * removed unused stuff
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:33  fredde
+ * initial commit
  *
  */
