@@ -23,10 +23,10 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.8 2003/08/21 09:22:21 fredde Exp $
+ * @version $Id: Sample.java,v 1.9 2003/09/01 09:06:50 fredde Exp $
  */
 class Sample {
-	private int sampleLength = 0;
+	int sampleLength = 0;
 	private int sampleQuality = 0;
 
 	int loopType = 0;
@@ -70,6 +70,7 @@ class Sample {
 
 		if ((loopType & 0x3) == 0) {
 			// no looping
+			loopStart = 0;
 			loopEnd = sampleLength;
 		}
 
@@ -95,26 +96,48 @@ class Sample {
 			loopStart >>= 1;
 
 			byte[] temp = Xm.read(in, 2 * sampleLength);
-			sampleData = new short[sampleLength];
+			sampleData = new short[sampleLength+4];
 
 			int tmpPos = 0;
 
 			int samp = 0;
 
-			for (int i = 0; i < sampleData.length; i++, tmpPos += 2) {
+			for (int i = 0; i < sampleLength; i++, tmpPos += 2) {
 				samp += Xm.make16Bit(temp, tmpPos);
 				sampleData[i] = (short) (samp);
 			}
 		} else {
-			sampleData = new short[sampleLength];
+			sampleData = new short[sampleLength+4];
 			byte[] temp = Xm.read(in, sampleLength);
 			int samp = 0;
 
-			for (int i = 0; i < sampleData.length; i++) {
+			for (int i = 0; i < sampleLength; i++) {
 				samp += temp[i]&0xff;
 				sampleData[i] = (short) (samp << 8);
 			}
 		}
+
+		int pos2 = 0;
+
+		if ((loopType & 0x2) == 0) {
+			if ((loopType & 0x1) != 0)
+				pos2 = loopStart;
+
+			for (int i = 0; i < 3; i++) 
+				sampleData[sampleLength+1+i] = sampleData[pos2+i];
+
+		} else if ((loopType & 0x2) != 0) {
+			pos2 = sampleLength;
+
+			for (int i = 0; i < 3; i++) 
+				sampleData[sampleLength+1+i] = sampleData[pos2-i];
+
+		}
+		System.arraycopy(sampleData, 0, sampleData, 1, sampleData.length - 3);
+
+		if ((loopType & 0x1) != 0) sampleData[0] = sampleData[loopStart];
+		else if ((loopType & 0x2) != 0) sampleData[0] = sampleData[1];
+
 		loopStart <<= 10;
 		loopEnd <<= 10;
 	}
@@ -122,6 +145,9 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.9  2003/09/01 09:06:50  fredde
+ * cubic spline
+ *
  * Revision 1.8  2003/08/21 09:22:21  fredde
  * loopfixes
  *
