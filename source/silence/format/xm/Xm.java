@@ -20,14 +20,14 @@ package silence.format.xm;
 import java.io.*;
 import java.net.URL;
 
-import org.komplex.audio.PullAudioSource;
+import silence.format.AudioFormat;
 
 /**
  * The general xm class
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
+ * @version $Id: Xm.java,v 1.3 2000/07/21 09:43:10 quarn Exp $
  */
-public class Xm implements PullAudioSource {
+public class Xm extends AudioFormat {
 
 	private String title = "";
 	private String tracker = "";
@@ -39,14 +39,14 @@ public class Xm implements PullAudioSource {
 	private Pattern[] pattern;
 	private Instrument[] instrument;
 
+	public Xm() {
+	}
+
 	/**
-	 * Creates a new XM-player. Do <strong>not</strong> buffer the InputStream, we will
-	 * do that for you.
+	 * Load the file into memory
 	 * @param is The InputStream to read the file from
 	 */
-	public Xm(InputStream is) throws IOException {
-		BufferedInputStream in = new BufferedInputStream(is);
-
+	protected void load(BufferedInputStream in) throws IOException {
 		readGeneralInfo(in);
 
 		pattern = new Pattern[patnum];
@@ -156,18 +156,37 @@ public class Xm implements PullAudioSource {
 		System.out.println();
 	}
 
+	int pos = 0;
+	int ins = 0;
+
 	/**
 	 * Play...
 	 */
 	public int read(int[] buffer, int off, int len) {
 		// do lots of stuff...
 
+		// just a little test...
+		// plays all the instruments ultra-fast :)
+		for (int i = off; i < off+len; i++) {
+			buffer[i] = (instrument[ins].sample[0].sampleData[pos] * 128 & 65535)|(instrument[ins].sample[0].sampleData[pos] * 128 << 16);
+
+			pos++;
+			if (pos >= instrument[ins].sample[0].sampleData.length) {
+				pos = 0;
+				ins++;
+				if (ins >= instrument.length) ins = 0;
+				while (instrument[ins].sample.length == 0) ins++;
+			}
+		}
 		return len;
 	}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.3  2000/07/21 09:43:10  quarn
+ * extends AudioFormat
+ *
  * Revision 1.2  2000/06/08 16:29:30  quarn
  * fixed/updated/etc...
  *
