@@ -22,7 +22,7 @@ import java.io.*;
 /**
  * Stores sample data
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
+ * @version $Id: Sample.java,v 1.3 2000/06/11 20:43:35 quarn Exp $
  */
 class Sample {
 
@@ -85,11 +85,15 @@ class Sample {
 		if (samplequality == 16) {
 			samplelength >>= 1;
 			sampleData = new byte[2 * samplelength];
-			in.read(sampleData);
 		} else {
 			sampleData = new byte[samplelength];
-			in.read(sampleData);
 		}
+
+		int read = in.read(sampleData);
+		while (read != sampleData.length) {
+			read += in.read(sampleData, read, sampleData.length - read);
+		}
+
 
 		int p = 0;
 		int old = 0;
@@ -101,3 +105,10 @@ class Sample {
 		}
 	}
 }
+/*
+ * ChangeLog:
+ * $Log: Sample.java,v $
+ * Revision 1.3  2000/06/11 20:43:35  quarn
+ * samples should now be loaded correctly in all jvm's
+ *
+ */
