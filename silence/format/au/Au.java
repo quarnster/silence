@@ -29,7 +29,7 @@ import org.komplex.audio.*;
  * can find at http://www.wotsit.org
  * 
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.2 2000/09/29 19:39:22 fredde Exp $
+ * @version $Id: Au.java,v 1.3 2000/12/21 17:16:00 fredde Exp $
  */
 public class Au
 	extends AudioFormat
@@ -47,7 +47,7 @@ public class Au
 	 * Load the file into memory
 	 * @param in The InputStream to read the file from
 	 */
-	protected void load(BufferedInputStream in)
+	public void load(BufferedInputStream in)
 		throws IOException
 	{
 		// magic number	the value 0x2e736e64 (ASCII ".snd")
@@ -127,7 +127,14 @@ public class Au
 		for (int i = off; i < len; i++) {
 			int currsamp = sampledata[(int) samppos];
 
-			buffer[i] = (currsamp & 65535) | (currsamp << 16);
+			switch (channels) {
+				case 1:
+					buffer[i] = currsamp & 65535;
+					break;
+				case 2:
+					buffer[i] = (currsamp & 65535) | (currsamp << 16);
+					break;
+			}
 			samppos += pitch;
 			if ((int) samppos >= sampledata.length) samppos = 0;
 		}
@@ -136,12 +143,15 @@ public class Au
 
 	public void setDevice(AudioOutDevice device) {
 		super.setDevice(device);
-		pitch = 1 / ((double) deviceSampleRate / this.samplerate);
+		pitch = ((double) this.samplerate / deviceSampleRate);
 	}
 }
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.3  2000/12/21 17:16:00  fredde
+ * load(is) is public
+ *
  * Revision 1.2  2000/09/29 19:39:22  fredde
  * we do not care about volume anymore
  *
