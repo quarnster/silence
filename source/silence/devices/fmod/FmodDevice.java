@@ -21,17 +21,13 @@ package silence.devices.fmod;
 import silence.devices.AudioDevice;
 
 /**
- * An audio device which uses FMOD
- * FMOD is Copyright (c) 1999-2000 FireLight Multimedia
- * You can download FMOD from http://www.fmod.org
+ * An audio device which uses FMOD.<br>
+ * FMOD is Copyright (c) 1999-2000 FireLight Multimedia.<br>
+ * You can download FMOD from <a href="http://www.fmod.org">http://www.fmod.org</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: FmodDevice.java,v 1.2 2000/05/27 10:11:30 quarn Exp $
+ * @version $Id: FmodDevice.java,v 1.3 2000/06/08 16:27:05 quarn Exp $
  */
 public class FmodDevice extends AudioDevice implements  Runnable {
-
-	static {
-		System.loadLibrary("fmodglue");
-	}
 
 	/**
 	 * Check if a sync event has occured.
@@ -85,7 +81,7 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 	private Thread t = null;
 
 	/**
-	 * Creates a new MidasDevice
+	 * Creates a new FmodDevice
 	 */
 	public FmodDevice() {
 	}
@@ -139,6 +135,9 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 /*
  * ChangeLog:
  * $Log: FmodDevice.java,v $
+ * Revision 1.3  2000/06/08 16:27:05  quarn
+ * moved the loadLibrary function to AudioDevice.java
+ *
  * Revision 1.2  2000/05/27 10:11:30  quarn
  * added getName and getUrl functions
  *

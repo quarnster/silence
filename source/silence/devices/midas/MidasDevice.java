@@ -21,18 +21,13 @@ package silence.devices.midas;
 import silence.devices.AudioDevice;
 
 /**
- * An audio device which uses midas
- *
- * Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.
- * You can download Midas from http://www.s2.org/midas/
+ * An audio device which uses midas.<br>
+ * Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.<br>
+ * You can download Midas from <a href="http://www.s2.org/midas">http://www.s2.org/midas</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: MidasDevice.java,v 1.5 2000/05/27 10:11:30 quarn Exp $
+ * @version $Id: MidasDevice.java,v 1.6 2000/06/08 16:27:49 quarn Exp $
  */
 public class MidasDevice extends AudioDevice implements Runnable {
-
-	static {
-		System.loadLibrary("midasglue");
-	}
 
 	/**
 	 * Check if a sync event has occured.
@@ -151,6 +146,9 @@ public class MidasDevice extends AudioDevice implements Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
+ * Revision 1.6  2000/06/08 16:27:49  quarn
+ * moved the loadLibrary function to AudioDevice.java
+ *
  * Revision 1.5  2000/05/27 10:11:30  quarn
  * added getName and getUrl functions
  *
