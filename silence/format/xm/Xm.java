@@ -26,13 +26,12 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.5 2000/10/14 19:12:24 fredde Exp $
+ * @version $Id: Xm.java,v 1.6 2000/12/21 17:21:42 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
 {
-	private String title = "";
-	private String tracker = "";
+	public String title = "";
 	int patorder[];
 
 	int defaultTempo = 0;
@@ -91,7 +90,7 @@ public class Xm
  	 *
 	 * @param is The InputStream to read the file from
 	 */
-	protected void load(BufferedInputStream in)
+	public void load(BufferedInputStream in)
 		throws IOException
 	{
 		readGeneralInfo(in);
@@ -116,12 +115,9 @@ public class Xm
 			throw new IOException("This is not a xm file!");
 		}
 
-
 		// Module name
 		b = read(in, 20);
-
 		title = new String(b);
-		System.out.println("Title: " + title);
 
 		in.read();
 
@@ -179,6 +175,7 @@ public class Xm
 	 */
 	public int read(int[] buffer, int off, int len) {
 		int realLen = len;
+
 		for (int i = off; i < off+len; i++) {
 			buffer[i] = 0;
 		}
@@ -194,8 +191,6 @@ public class Xm
 			restTick -= read;
 		}
 			
-
-readLoop:
 		for (int i = off; i < off+len; i += samplesPerTick) {
 			if (--tempo <= 0) {
 				for (int j = 0; j < channel.length; j++)  {
@@ -207,7 +202,7 @@ readLoop:
 						}
 						playingPatternPos++;
 						playingPattern = patorder[playingPatternPos];
-						channel[j].currentEffect = 0;
+						channel[j].currentEffect = -1;
 
 						patternPos = 0;
 
@@ -257,6 +252,9 @@ readLoop:
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.6  2000/12/21 17:21:42  fredde
+ * load(in) is public
+ *
  * Revision 1.5  2000/10/14 19:12:24  fredde
  * added the make[16|32]Bit functions
  * removed debugging messages
