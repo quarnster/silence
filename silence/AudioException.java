@@ -22,11 +22,13 @@ package org.gjt.fredde.silence;
  * AudioException
  *
  * @author Fredrik Ehnbom
- * @version $Id: AudioException.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
+ * @version $Id: AudioException.java,v 1.2 2003/09/01 09:02:39 fredde Exp $
  */
 public class AudioException
 	extends Exception
 {
+
+	private Exception exception = null;
 
 	/**
 	 * Creates a new AudioException
@@ -34,11 +36,26 @@ public class AudioException
 	public AudioException(String exception) {
 		super(exception);
 	}
+
+	public AudioException(Exception e) {
+		super(e.toString());
+		exception = e;
+	}
+
+	public void printStackTrace() {
+		if (exception != null) {
+			exception.printStackTrace();
+		}
+		super.printStackTrace();
+	}
 }
 /*
  * ChangeLog:
  * $Log: AudioException.java,v $
- * Revision 1.1  2000/09/25 16:34:33  fredde
- * Initial revision
+ * Revision 1.2  2003/09/01 09:02:39  fredde
+ * AudioException update
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:33  fredde
+ * initial commit
  *
  */

@@ -29,7 +29,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.6 2002/04/27 14:49:40 fredde Exp $
+ * @version $Id: Silence.java,v 1.7 2003/09/01 09:02:39 fredde Exp $
  */
 public class Silence
 	implements AudioConstants
@@ -156,7 +156,7 @@ public class Silence
 		try {
 			format.load(file);
 		} catch (Exception e) {
-			throw new AudioException(e.toString());
+			throw new AudioException(e);
 		}
 
 		return format;
@@ -190,7 +190,7 @@ public class Silence
 		try {
 			device.start();
 		} catch (org.komplex.audio.AudioException e) {
-			throw new AudioException(e.toString());
+			throw new AudioException(e);
 		}
 	}
 
@@ -204,6 +204,9 @@ public class Silence
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.7  2003/09/01 09:02:39  fredde
+ * AudioException update
+ *
  * Revision 1.6  2002/04/27 14:49:40  fredde
  * added patch for .gz-files by Henrik Raula
  *
