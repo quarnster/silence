@@ -20,12 +20,32 @@ package silence.devices;
 
 import silence.AudioException;
 
+import silence.devices.fmod.*;
+import silence.devices.midas.*;
+
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.4 2000/05/07 09:27:07 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.5 2000/05/07 14:10:54 quarn Exp $
  */
 public abstract class AudioDevice {
+
+	/**
+	 * Returns the AudioDevices for this platform
+	 */
+	public static AudioDevice getSystemAudioDevice() {
+		String sys = System.getProperty("os.name");
+		if (sys.indexOf("Windows") != -1) {
+			return new FmodDevice();
+		} else if (sys.equals("Linux")) {
+			return new MidasDevice();
+		}
+
+		// null for now...
+		// in the future we will have our own 100% java version
+		// to return instead...
+		return null;
+	}
 
 	/**
 	 * Init the AudioDevice
@@ -69,6 +89,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.5  2000/05/07 14:10:54  quarn
+ * added getSystemAudioDevice function
+ *
  * Revision 1.4  2000/05/07 09:27:07  quarn
  * Added setVolume method, added javadoc tags\n is now an abstract class instead of an interface
  *
