@@ -26,7 +26,7 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.7 2000/06/07 13:18:07 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.8 2000/06/08 16:22:33 quarn Exp $
  */
 public abstract class AudioDevice {
 
@@ -35,16 +35,19 @@ public abstract class AudioDevice {
 	 */
 	public static AudioDevice getSystemAudioDevice() {
 		String sys = System.getProperty("os.name");
-		if (sys.indexOf("Windows") != -1) {
-			return new FmodDevice();
-		} else if (sys.equals("Linux")) {
-			return new MidasDevice();
+		try {
+			if (sys.indexOf("Windows") != -1) {
+				System.loadLibrary("fmodglue");
+				return new FmodDevice();
+			} else if (sys.equals("Linux")) {
+				System.loadLibrary("midasglue");
+				return new MidasDevice();
+			}
+		} catch (Throwable t) {
+			return new MuhmuDevice();
 		}
 
-		// null for now...
-		// in the future we will have our own 100% java version
-		// to return instead...
-		return null;
+		return new MuhmuDevice();
 	}
 
 	/**
@@ -58,10 +61,7 @@ public abstract class AudioDevice {
 			return "silence.devices.midas.MidasDevice";
 		}
 
-		// null for now...
-		// in the future we will have our own 100% java version
-		// to return instead...
-		return null;
+		return "silence.devices.MuhmuDevice";
 	}
 
 	/**
@@ -116,6 +116,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.8  2000/06/08 16:22:33  quarn
+ * added the 100% pure java MuhmuDevice
+ *
  * Revision 1.7  2000/06/07 13:18:07  quarn
  * added getSystemAudioDeviceName function
  *
