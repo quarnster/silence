@@ -25,7 +25,7 @@ import silence.devices.*;
 /**
  * The basic class for silence.
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.3 2000/06/25 15:57:10 quarn Exp $
+ * @version $Id: Silence.java,v 1.4 2000/06/25 18:42:09 quarn Exp $
  */
 public class Silence {
 
@@ -60,7 +60,7 @@ public class Silence {
 	 * @param device The device to load
 	 * @return The AudioDevice if it could be loaded or null if it could not
 	 */
-	public AudioDevice loadDevice(String device) {
+	public AudioDevice loadDevice(String device) throws AudioException {
 		System.out.println(device);
 		try {
 			String library = nativelibs.get(device).toString();
@@ -69,8 +69,7 @@ public class Silence {
 			Class c = Class.forName(device);
 			return (AudioDevice) c.newInstance();
 		} catch (Throwable t) {
-			System.err.println(t);
-			return null;
+			throw new AudioException("failed to load device \"" + device + "\": " + t.toString());
 		}
 	}
 
@@ -84,8 +83,12 @@ public class Silence {
 		Enumeration e = devices.elements();
 
 		while (e.hasMoreElements()) {
-			audio = loadDevice(e.nextElement().toString());
-			if (audio != null) return audio;
+			try {
+				audio = loadDevice(e.nextElement().toString());
+				if (audio != null) return audio;
+			} catch (AudioException ae) {
+				System.err.println(ae);
+			}
 		}
 
 		return audio;
@@ -94,6 +97,9 @@ public class Silence {
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.4  2000/06/25 18:42:09  quarn
+ * loadDevice now throws an exception if the device could not be loaded
+ *
  * Revision 1.3  2000/06/25 15:57:10  quarn
  * now does something usefull
  *
