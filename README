@@ -1,26 +1,13 @@
 silence
 ----------------
 
-silence is an effort to create a xm/mod/mp3 player to be
+silence is an effort to create a 100% pure xm/mod/mp3 player to be
 used in games and demos/intros.
 
-Currently it is only a layer between Java and FMOD, Bass or Midas,
-but the work to create a 100% pure Java player has begun.
-
-Please note, just because silence is licensed under the GNU LGPL
-does not mean that FMOD, Midas, BASS and MuhmuAudio are (ok, MuhmuAudio
-acctually is licensed under the GNU LGPL :) ). Please read the licenses
-for these devices before using silence with them.
-
+silence uses the excellent MuhmuAudio drivers for audioplaying.
 
 silence homepage:	http://silence.sourceforge.net
 MuhmuAudio homepage:	http://muhmuaudio.sourceforge.net
-FMOD homepage:		http://www.fmod.org
-Midas homepage:		http://www.s2.org/midas
-BASS homepage:		http://www.un4seen.com/music/
 
 silence is Copyright (c) 2000 Fredrik Ehnbom
 MuhmuAudio is Copyright (c) 2000 Jarno Heikkinen
-FMOD is Copyright (c) 1999-2000 FireLight Multimedia
-Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.
-Bass is Copyright (c) 1999-2000 Ian Luck. All rights reserved.
