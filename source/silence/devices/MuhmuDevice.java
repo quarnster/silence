@@ -36,7 +36,7 @@ import silence.format.AudioFormat;
  * For more information about MuhmuAudio please visit
  * <a href="http://muhmuaudio.sourceforge.net">http://muhmuaudio.sourceforge.net</a>
  * @author Fredrik Ehnbom
- * @version $Id: MuhmuDevice.java,v 1.4 2000/07/21 09:40:00 quarn Exp $
+ * @version $Id: MuhmuDevice.java,v 1.5 2000/08/20 17:55:48 quarn Exp $
  */
 public class MuhmuDevice extends AudioDevice {
 
@@ -52,7 +52,7 @@ public class MuhmuDevice extends AudioDevice {
 	/**
 	 * Returns the name of this device
 	 */
-	public String getName() {
+	public String toString() {
 		return "MuhmuAudio";
 	}
 
@@ -103,11 +103,10 @@ public class MuhmuDevice extends AudioDevice {
 	}
 
 	/**
-	 * Start playing the file
-	 * @param file The file to play
-	 * @param loop Wheter to loop or not
+	 * Loads the file
+	 * @param file The file to load
 	 */
-	public void play(String file, boolean loop) throws AudioException {
+	public void load(String file) throws AudioException {
 		if (file.indexOf(".") == -1) throw new AudioException(file + " can not be played by this device");
 
 		String end = file.substring(file.lastIndexOf("."), file.length());
@@ -117,6 +116,8 @@ public class MuhmuDevice extends AudioDevice {
 
 		if (format == null) throw new AudioException(file + " can not be played by this device");
 
+		format.setSampleRate(device.getSampleRate());
+
 		// load the file
 		try {
 			format.load(file);
@@ -125,7 +126,13 @@ public class MuhmuDevice extends AudioDevice {
 		}
 
 		device.setPullSource(format);
+	}
 
+	/**
+	 * Start playing the file
+	 * @param loop Wheter to loop or not
+	 */
+	public void play(boolean loop) throws AudioException {
 		try {
 			device.start();
 		} catch (org.komplex.audio.AudioException e) {
@@ -159,6 +166,9 @@ public class MuhmuDevice extends AudioDevice {
 /*
  * ChangeLog:
  * $Log: MuhmuDevice.java,v $
+ * Revision 1.5  2000/08/20 17:55:48  quarn
+ * split play into play and load, some fixes
+ *
  * Revision 1.4  2000/07/21 09:40:00  quarn
  * now uses the AudioFormat system
  *
