@@ -1,10 +1,12 @@
 #
-# $Id: Makefile,v 1.2 2000/09/29 19:32:58 fredde Exp $
+# $Id: Makefile,v 1.3 2000/10/12 15:53:47 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
 JAVAC = jikes
 JAVAFLAGS = -g -deprecation
+MuhmuAudioDir = ~/java/muhmuaudio/src
+silenceDir = $(PWD)
 
 .SUFFIXES: .class .java
 
@@ -35,12 +37,17 @@ javadoc:
 
 dist: all tests javadoc
 
+jar: all
+	jar cvf silence.jar \
+	`find org/gjt/fredde/silence/ -regex .*.class -print`
+	cd $(MuhmuAudioDir) && \
+	jar uvf $(silenceDir)/silence.jar \
+	`find -regex .*.class -print`
+
 .java.class:
 	$(JAVAC) $(JAVAFLAGS) $<
 
 clean:
-	rm -f org/gjt/fredde/silence/*.class
-	rm -f org/gjt/fredde/silence/format/*.class
-	rm -f org/gjt/fredde/silence/format/xm/*.class
-	rm -f org/gjt/fredde/silence/format/au/*.class
+	rm -f `find org/gjt/fredde/silence/ -regex .*.class -print`
+	rm -f silence.jar
 	rm -f -r javadoc
