@@ -1,0 +1,20 @@
+silence
+----------------
+
+silence is an effort to create a xm/mod/mp3 player to be
+used in games and demos/intros.
+
+Currently it is only a layer between Java and Fmod or Midas,
+but one goal of silence is to create a 100% pure Java player.
+
+Please note, just because silence is licensed under the GNU LGPL
+does not mean that FMOD and Midas are. Please read the licenses
+for these devices before using silence with them.
+
+
+silence homepage: http://silence.sourceforge.net
+FMOD homepage:    http://www.fmod.org
+Midas homepage:   http://www.s2.org/midas
+
+FMOD is Copyright (c) 1999-2000 FireLight Multimedia
+Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.
