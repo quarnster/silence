@@ -26,31 +26,24 @@ import java.awt.event.*;
 /**
  * An example player for the Midas device
  * @author Fredrik Ehnbom
- * @version $Id: MidasTest.java,v 1.5 2000/06/25 15:52:30 quarn Exp $
+ * @version $Id: MidasTest.java,v 1.6 2000/06/25 18:34:11 quarn Exp $
  */
-public class MidasTest extends Frame {
-
-	static {
-		try {
-			System.loadLibrary("msilence");
-		} catch (Throwable t) {
-			System.err.println("could not load library:");
-			t.printStackTrace();
-		}
-	}
+public class MidasTest extends Frame implements CallbackClass {
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
 	 */
-	private AudioDevice audioDevice = new MidasDevice() {
-		// This is how you redefine the sync method.
-		public void sync(int eff) {
-			System.out.println("Midas wants to sync... (effect num: " + eff + ")");
-		}
-	};
+	private AudioDevice audioDevice = null;
 
 	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 64, 4, 0, 64);
 	private String file = null;
+
+	/**
+	 * The callback for when the device finds a sync callback
+	 */
+	public void syncCallback(int effect) {
+		System.out.println(audioDevice.getName() + " sync: " + effect);
+	}
 
 	/**
 	 * Creates a new Silence player.
@@ -60,6 +53,17 @@ public class MidasTest extends Frame {
 		super("Midas test: " + file);
 		this.file = file;
 		setLayout(new BorderLayout());
+
+		try {
+			// load the device
+			audioDevice = new Silence().loadDevice(Silence.MidasDevice);
+		} catch (AudioException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		// set callback class
+		audioDevice.setCallbackClass(this);
 
 		vol.addAdjustmentListener(volListener);
 		add("North", vol);
@@ -130,6 +134,9 @@ public class MidasTest extends Frame {
 /*
  * ChangeLog:
  * $Log: MidasTest.java,v $
+ * Revision 1.6  2000/06/25 18:34:11  quarn
+ * updated for the new CallbackClass
+ *
  * Revision 1.5  2000/06/25 15:52:30  quarn
  * updated
  *

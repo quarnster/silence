@@ -25,14 +25,21 @@ import java.awt.event.*;
 /**
  * An example player for silence.
  * @author Fredrik Ehnbom
- * @version $Id: SilenceTest.java,v 1.1 2000/06/25 15:53:22 quarn Exp $
+ * @version $Id: SilenceTest.java,v 1.2 2000/06/25 18:34:11 quarn Exp $
  */
-public class SilenceTest extends Frame {
+public class SilenceTest extends Frame implements CallbackClass {
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
 	 */
 	private AudioDevice audioDevice = new Silence().getAudioDevice();
+
+	/**
+	 * The callback for when the device finds a sync callback
+	 */
+	public void syncCallback(int effect) {
+		System.out.println(audioDevice.getName() + " sync: " + effect);
+	}
 
 	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 128, 4, 0, 256);
 	private String file = null;
@@ -45,6 +52,9 @@ public class SilenceTest extends Frame {
 		super("silence test: " + file);
 		this.file = file;
 		setLayout(new BorderLayout());
+
+		// set the callback class for the audiodevice
+		audioDevice.setCallbackClass(this);
 
 		vol.addAdjustmentListener(volListener);
 		add("North", vol);
@@ -101,11 +111,7 @@ public class SilenceTest extends Frame {
 			} else if (event.equals("Stop")) {
 				audioDevice.stop();
 			} else if (event.equals("Pause")) {
-				try {
-					audioDevice.pause();
-				} catch (AudioException fe) {
-					fe.printStackTrace();
-				}
+				audioDevice.pause();
 			}
 		}
 	};
@@ -121,6 +127,9 @@ public class SilenceTest extends Frame {
 /*
  * ChangeLog:
  * $Log: SilenceTest.java,v $
+ * Revision 1.2  2000/06/25 18:34:11  quarn
+ * updated for the new CallbackClass
+ *
  * Revision 1.1  2000/06/25 15:53:22  quarn
  * initial commit
  *

@@ -26,31 +26,24 @@ import java.awt.event.*;
 /**
  * An example player for the FMOD device
  * @author Fredrik Ehnbom
- * @version $Id: FmodTest.java,v 1.5 2000/06/25 15:52:30 quarn Exp $
+ * @version $Id: FmodTest.java,v 1.6 2000/06/25 18:34:11 quarn Exp $
  */
-public class FmodTest extends Frame {
-
-	static {
-		try {
-			System.loadLibrary("fsilence");
-		} catch (Throwable t) {
-			System.err.println("could not load library:");
-			t.printStackTrace();
-		}
-	}
+public class FmodTest extends Frame implements CallbackClass {
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
 	 */
-	private AudioDevice audioDevice = new FmodDevice() {
-		// This is how you redefine the sync method.
-		public void sync(int eff) {
-			System.out.println("FMOD wants to sync... (effect num: " + eff + ")");
-		}
-	};
+	private AudioDevice audioDevice = null; 
 
 	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 128, 4, 0, 256);
 	private String file = null;
+
+	/**
+	 * The callback for when the device finds a sync callback
+	 */
+	public void syncCallback(int effect) {
+		System.out.println(audioDevice.getName() + " sync: " + effect);
+	}
 
 	/**
 	 * Creates a new Silence player.
@@ -60,6 +53,17 @@ public class FmodTest extends Frame {
 		super("FMOD test: " + file);
 		this.file = file;
 		setLayout(new BorderLayout());
+
+		try {
+			// load the device
+			audioDevice = new Silence().loadDevice(Silence.FmodDevice);
+		} catch (AudioException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		// set Callback class for this audiodevice
+		audioDevice.setCallbackClass(this);
 
 		vol.addAdjustmentListener(volListener);
 		add("North", vol);
@@ -132,6 +136,9 @@ public class FmodTest extends Frame {
 /*
  * ChangeLog:
  * $Log: FmodTest.java,v $
+ * Revision 1.6  2000/06/25 18:34:11  quarn
+ * updated for the new CallbackClass
+ *
  * Revision 1.5  2000/06/25 15:52:30  quarn
  * updated
  *
