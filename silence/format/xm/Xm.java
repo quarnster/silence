@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.3 2000/10/07 13:55:07 fredde Exp $
+ * @version $Id: Xm.java,v 1.4 2000/10/08 18:03:10 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
@@ -44,6 +44,7 @@ public class Xm
 	int playingPatternPos = 0;
 	int playingPattern = 0;
 	int patternPos = 0;
+	int globalVolume = 64;
 
 	private int restTick = 0;
 
@@ -185,6 +186,7 @@ public class Xm
 			for (int j = 0; j < channel.length; j++)  {
 				channel[j].play(buffer, off, read);
 			}
+
 			off += read;
 			len -= read;
 			restTick -= read;
@@ -196,11 +198,26 @@ readLoop:
 			if (--tempo <= 0) {
 				for (int j = 0; j < channel.length; j++)  {
 					patternPos = channel[j].update(pattern[playingPattern], patternPos);
-					if (patternPos < 0) {
-						patternPos = 0;
-						tempo = 0;
 
-						continue readLoop;
+					if (channel[j].currentEffect == 0x0D) { // pattern break
+						for (int rest = j+1; rest < channel.length; rest++) {
+							patternPos = channel[rest].update(pattern[playingPattern], patternPos);
+						}
+						playingPatternPos++;
+						playingPattern = patorder[playingPatternPos];
+						channel[j].currentEffect = 0;
+
+						patternPos = 0;
+
+						int endRow = channel[j].currentEffectParam;
+
+						for (int rows = 0; rows < endRow; rows++) {
+							for (int chan = 0; chan < channel.length; chan++) {
+								patternPos = channel[chan].skip(pattern[playingPattern], patternPos);
+							}
+						}
+
+						break;
 					}
 				}
 
@@ -212,7 +229,7 @@ readLoop:
 						playingPatternPos = 0;
 					}
 					playingPattern = patorder[playingPatternPos];
-					System.out.println("Pattern: " + playingPattern);
+					System.out.println("pattern: " + playingPattern);
 				}
 				tempo = defaultTempo;
 			}
@@ -241,6 +258,9 @@ readLoop:
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.4  2000/10/08 18:03:10  fredde
+ * fixed "pattern break" (Dxx) command
+ *
  * Revision 1.3  2000/10/07 13:55:07  fredde
  * Fixed to read in the data correctly.
  * Fixed to play the .xm correctly.
