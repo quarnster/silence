@@ -1,5 +1,5 @@
 /* Au.java - Loading and playing .au-files
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2001 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,18 +27,24 @@ import org.komplex.audio.*;
  * A class for loading and playing .au-files.
  * Information is taken from au.txt which you
  * can find at http://www.wotsit.org
- * 
+ *
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.3 2000/12/21 17:16:00 fredde Exp $
+ * @version $Id: Au.java,v 1.4 2001/01/06 10:41:15 fredde Exp $
  */
 public class Au
 	extends AudioFormat
 {
 
 	private int samplerate = 0;
-	private int[] sampledata;
+	private int channels = 0;
+
 	private double samppos = 0;
 	private double pitch = 0;
+
+	private BufferedInputStream in = null;
+	private int[] samples = new int[1024];
+	private byte[] sampleData = new byte[1024];
+	private Decoder decoder;
 
 	public Au() {
 	}
@@ -50,22 +56,23 @@ public class Au
 	public void load(BufferedInputStream in)
 		throws IOException
 	{
-		// magic number	the value 0x2e736e64 (ASCII ".snd")
-		System.out.println("0x2e: " + ((in.read() == 0x2e) ? "yes" : "no"));
-		System.out.println("0x73: " + ((in.read() == 0x73) ? "yes" : "no"));
-		System.out.println("0x6e: " + ((in.read() == 0x6e) ? "yes" : "no"));
-		System.out.println("0x64: " + ((in.read() == 0x64) ? "yes" : "no"));
+		this.in = in;
+		// magic number	        the value 0x2e736e64 (ASCII ".snd")
+		byte[] b = new byte[4];
+		in.read(b);
 
-		// data offset	the offset, in octets, to the data part.
+		if (!(new String(b).equals(".snd"))) {
+			throw new IOException("this does not seem to be an .au file...");
+		}
+
+		// data offset          the offset, in octets, to the data part.
 		//			The minimum valid number is 24 (decimal).
 		int offset = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
-		System.out.println("offset: " + offset);
 
 		// data size		the size in octets, of the data part.
 		//			If unknown, the value 0xffffffff should
 		//			be used.
 		int size = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
-		System.out.println("size: " + size);
 
 		// encoding		the data encoding format:
 		//
@@ -81,42 +88,22 @@ public class Au
 		//					using the CCITT G.721 ADPCM
 		//					voice data encoding scheme.
 		int encoding = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
-		System.out.println("enc: " + encoding);
 
-		// sample rate	the number of samples/second (e.g., 8000)
+		switch (encoding) {
+			case 1:
+				decoder = new MulawDecoder();
+				break;
+			default:
+				throw new IOException("file has unknown encoding...");
+		}
+
+		// sample rate          the number of samples/second (e.g., 8000)
 		samplerate = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
-		System.out.println("rate: " + samplerate);
-		
+
 		// channels		the number of interleaved channels (e.g., 1)
-		int channels = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
-		System.out.println("channels: " + channels);
+		channels = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
 
 		in.skip(offset - 24);
-
-		sampledata = new int[size];
-		byte tmpsampledata[] = new byte[size];
-		int read = in.read(tmpsampledata);
-
-		while (read != size) {
-			read += in.read(tmpsampledata, read, size - read);
-		}
-
-		// we want linear samples so convert...
-		if (encoding == 1) {
-			for (int i = 0; i < sampledata.length; i++) {
-				sampledata[i] = mulawDecode((int) tmpsampledata[i]);
-			}
-		}
-		in.close();
-	}
-
-	private int mulawDecode(int ulaw) {
-		ulaw = ~ulaw;
-		int exponent = (ulaw >> 4) & 0x7;
-		int mantissa = (ulaw & 0xf) + 16;
-		int adjusted = (mantissa << (exponent + 3)) - 128 - 4;
-
-		return ((ulaw & 0x80) > 0) ? adjusted : -adjusted;
 	}
 
 	/**
@@ -124,31 +111,62 @@ public class Au
 	 */
 	public int read(int[] buffer, int off, int len) {
 		if (!playLoud) return len;
-		for (int i = off; i < len; i++) {
-			int currsamp = sampledata[(int) samppos];
 
-			switch (channels) {
-				case 1:
-					buffer[i] = currsamp & 65535;
-					break;
-				case 2:
-					buffer[i] = (currsamp & 65535) | (currsamp << 16);
-					break;
+		try {
+			for (int i = off; i < off+len; ) {
+	        		if (samppos >= samples.length) {
+		        		int ret = in.read(sampleData);
+					samples = decoder.decode(sampleData);
+					samppos = 0;
+
+					// end of stream
+					if (ret == 0) return -1;
+			        }
+
+				int pos = 0;
+				if (channels == 2) {
+					for (; i < (off + len) && samppos < samples.length; samppos += pitch) {
+						pos =  (((int) samppos) >> 1) << 1;
+
+		        			buffer[i] = samples[pos] & 65535;
+			        		buffer[i++] |= samples[pos+1] << 16;
+					}
+
+				} else {
+					for (; i < (off + len) && samppos < sampleData.length; samppos += pitch) {
+						pos =  (int) samppos;
+						int sample = samples[pos];
+
+		        			buffer[i] = sample & 65535;
+			        		buffer[i++] |= sample << 16;
+					}
+				}
 			}
-			samppos += pitch;
-			if ((int) samppos >= sampledata.length) samppos = 0;
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			return -1;
 		}
+
 		return len;
 	}
 
 	public void setDevice(AudioOutDevice device) {
 		super.setDevice(device);
-		pitch = ((double) this.samplerate / deviceSampleRate);
+		pitch = channels * ((double) this.samplerate / deviceSampleRate);
+	}
+
+	public void close()
+		throws IOException
+	{
+		in.close();
 	}
 }
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.4  2001/01/06 10:41:15  fredde
+ * streams data, stereo working, using decoders
+ *
  * Revision 1.3  2000/12/21 17:16:00  fredde
  * load(is) is public
  *
