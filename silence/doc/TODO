@@ -1,7 +1,11 @@
 
-Formats:
-	- xm
-	- mod
-	- it
-	- mp3
-	- au
+Implement all audioformats that I think makes sense. Here is a list:
+
+.au
+.it
+.mod
+.mp3
+.ogg
+.s3m
+.wav
+.xm

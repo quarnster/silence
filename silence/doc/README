@@ -1,13 +1,15 @@
 silence
 ----------------
 
-silence is an effort to create a 100% pure xm//mp3/etc player to be
-used in games and demos/intros.
-
-silence uses the excellent MuhmuAudio drivers for audioplaying.
+silence is an effort to create a pure java music player for various music
+formats.
 
 silence homepage:	http://www.gjt.org/~fredde/silence/
-MuhmuAudio homepage:	http://muhmuaudio.sourceforge.net
 
-silence is Copyright (c) 2000 Fredrik Ehnbom
-MuhmuAudio is Copyright (c) 2000 Jarno Heikkinen
+Libraries used by silence:
+
+MuhmuAudio              http://www.sourceforge.net/projects/muhmuaudio/
+JOrbis                  http://www.jcraft.com/jorbis/
+
+silence is Copyright (c) 2000-2001 Fredrik Ehnbom
+Everything else mentioned here is copyrighted by their respective authors.

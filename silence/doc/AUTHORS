@@ -2,7 +2,6 @@
 Fredrik Ehnbom <fredde@gjt.org>
 
 
-silence uses MuhmuAudio.
-http://muhmuaudio.sourceforge.net
-
-MuhmuAudio is Copyright (c) 2000 Jarno Heikkinen
+Some libraries are also used by silence. In the "README" file you can see a list
+of these libraries and their respective homepages. Please go to the hompages of
+the libraries to see whom wrote them.
