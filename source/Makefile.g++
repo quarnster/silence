@@ -1,13 +1,8 @@
 CLASSPATH = ./
 JAVAC = jikes
 JAVAFLAGS = -g -deprecation
-JAVADIR = /usr/local/jdk1.3
-MIDASDIR = /usr/local/src/midas-1.1.2
 
-CC = g++
-CFLAGS = --shared -ggdb -Wall -I$(JAVADIR)/include -I$(JAVADIR)/include/linux -I$(MIDASDIR)/include -L$(MIDASDIR)/lib/linux/gcdebug
-
-.SUFFIXES: .class .java .c .o
+.SUFFIXES: .class .java
 
 CLASSES = silence/AudioException.class \
 	silence/Silence.class \
@@ -32,9 +27,9 @@ formats: silence/format/AudioFormat.class \
 
 javadoc:
 	mkdir javadoc
-	javadoc -d javadoc silence silence.devices silence.devices.bass silence.devices.midas silence.devices.fmod silence.format silence.format.xm
+	javadoc -d javadoc silence silence.devices silence.format silence.format.xm
 
-dist: all nativelib jar javadoc
+dist: all jar javadoc
 
 .java.class:
 	$(JAVAC) $(JAVAFLAGS) $<
@@ -42,9 +37,6 @@ dist: all nativelib jar javadoc
 clean:
 	rm -f silence/*.class
 	rm -f silence/devices/*.class
-	rm -f silence/devices/midas/*.class
-	rm -f silence/devices/fmod/*.class
-	rm -f silence/devices/bass/*.class
 	rm -f silence/format/*.class
 	rm -f silence/format/xm/*.class
 	rm -f *.so 
@@ -55,11 +47,5 @@ jar:
 	jar cvf silence.jar \
 	silence/*.class \
 	silence/devices/*.class \
-	silence/devices/midas/*.class \
-	silence/devices/bass/*.class \
-	silence/devices/fmod/*.class \
 	silence/format/*.class \
 	silence/format/xm/*.class
-
-nativelibs:
-	$(CC) $(CFLAGS) silence/devices/midas/midasglue.c -lmidas -o libmsilence.so
