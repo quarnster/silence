@@ -22,15 +22,15 @@ import java.io.*;
 /**
  * Stores sample data
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.3 2000/06/11 20:43:35 quarn Exp $
+ * @version $Id: Sample.java,v 1.4 2000/09/03 17:46:17 quarn Exp $
  */
 class Sample {
 
 	private int samplelength = 0;
 	private int looptype = 0;
 	private int samplequality = 0;
-	private int relativenote = 0;
-	private int finetune = 0;
+	protected int relativenote = 0;
+	protected int finetune = 0;
 	protected byte[] sampleData;
 
 
@@ -72,6 +72,7 @@ class Sample {
 
 		// Relative note number (signed byte)
 		relativenote = in.read();
+		if (relativenote <= 0) relativenote = 1;
 
 		// Reserved
 		in.read();
@@ -108,6 +109,9 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.4  2000/09/03 17:46:17  quarn
+ * made some fields protected
+ *
  * Revision 1.3  2000/06/11 20:43:35  quarn
  * samples should now be loaded correctly in all jvm's
  *
