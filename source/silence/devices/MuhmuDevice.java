@@ -36,7 +36,7 @@ import silence.format.xm.Xm;
  * For more information about MuhmuAudio please visit
  * <a href="http://muhmuaudio.sourceforge.net">http://muhmuaudio.sourceforge.net</a>
  * @author Fredrik Ehnbom
- * @version $Id: MuhmuDevice.java,v 1.2 2000/06/20 23:22:05 quarn Exp $
+ * @version $Id: MuhmuDevice.java,v 1.3 2000/06/25 18:39:08 quarn Exp $
  */
 public class MuhmuDevice extends AudioDevice {
 
@@ -146,11 +146,6 @@ public class MuhmuDevice extends AudioDevice {
 	public void pause() {}
 
 	/**
-	 * This function is called when a sync event occurs
-	 */
-	public void sync(int effect) {}
-
-	/**
 	 * Sets the volume
 	 * @param volume The new volume
 	 */
@@ -164,6 +159,9 @@ public class MuhmuDevice extends AudioDevice {
 /*
  * ChangeLog:
  * $Log: MuhmuDevice.java,v $
+ * Revision 1.3  2000/06/25 18:39:08  quarn
+ * removed the sync method
+ *
  * Revision 1.2  2000/06/20 23:22:05  quarn
  * no need to throw an exception on pause
  *

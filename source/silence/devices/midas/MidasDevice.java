@@ -25,7 +25,7 @@ import silence.devices.AudioDevice;
  * Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.<br>
  * You can download Midas from <a href="http://www.s2.org/midas">http://www.s2.org/midas</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: MidasDevice.java,v 1.7 2000/06/20 23:09:28 quarn Exp $
+ * @version $Id: MidasDevice.java,v 1.8 2000/06/25 18:39:08 quarn Exp $
  */
 public class MidasDevice extends AudioDevice implements Runnable {
 
@@ -106,14 +106,6 @@ public class MidasDevice extends AudioDevice implements Runnable {
 	}
 
 	/**
-	 * This function is called when a sync event has occured.
-	 * @param synceff The synceffect parameter
-	 */
-	public void sync(int synceff) {
-		System.out.println("sync: " + synceff);
-	}
-
-	/**
 	 * Starts playing the file
 	 * @param file The file to play
 	 * @param loop Wheter to loop or not
@@ -144,6 +136,9 @@ public class MidasDevice extends AudioDevice implements Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
+ * Revision 1.8  2000/06/25 18:39:08  quarn
+ * removed the sync method
+ *
  * Revision 1.7  2000/06/20 23:09:28  quarn
  * do nothing on pause instead of throwing an exception
  *

@@ -25,7 +25,7 @@ import silence.devices.AudioDevice;
  * FMOD is Copyright (c) 1999-2000 FireLight Multimedia.<br>
  * You can download FMOD from <a href="http://www.fmod.org">http://www.fmod.org</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: FmodDevice.java,v 1.4 2000/06/20 23:08:32 quarn Exp $
+ * @version $Id: FmodDevice.java,v 1.5 2000/06/25 18:39:08 quarn Exp $
  */
 public class FmodDevice extends AudioDevice implements  Runnable {
 
@@ -100,13 +100,6 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 	}
 
 	/**
-	 * This function is called when a sync event has occured.
-	 */
-	public void sync(int synceff) {
-		System.out.println("sync: " + synceff);
-	}
-
-	/**
 	 * Starts playing the file
 	 */
 	public void play(String file, boolean loop) throws FmodException {
@@ -121,7 +114,7 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 	/**
 	 * Pause music
 	 */
-        public native void pause();
+	public native void pause();
 
 	/**
 	 * Stops playing the file
@@ -135,6 +128,9 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 /*
  * ChangeLog:
  * $Log: FmodDevice.java,v $
+ * Revision 1.5  2000/06/25 18:39:08  quarn
+ * removed the sync method
+ *
  * Revision 1.4  2000/06/20 23:08:32  quarn
  * removed the exception throwing on pause
  *
