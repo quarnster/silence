@@ -1,0 +1,44 @@
+CLASSPATH = ./
+JAVAC = jikes
+JAVAFLAGS = -g -deprecation
+JAVADIR = \jdk1.2.2
+
+CLIB = midasglue.dll
+CC = bcc32
+CFLAGS = -P -w- -c
+
+.SUFFIXES: .class .java .o .c
+
+CLASSES = silence/AudioException.class \
+	silence/devices/AudioDevice.class \
+	silence/devices/midas/MidasDevice.class \
+	silence/devices/midas/MidasException.class
+
+
+all: $(CLASSES)
+
+dist: all nativelibs jar
+
+nativelibs: fmodlib midaslib
+	
+.java.class:
+	$(JAVAC) $(JAVAFLAGS) $<
+
+clean:
+	del silence\*.class
+	del silence\devices\*.class
+	del silence\devices\midas\*.class
+	del silence\devices\fmod\*.class
+	del *.dll 
+	del *.jar
+
+jar:
+	jar cvf silence.jar silence/*.class silence/devices/*.class silence/devices/midas/*.class
+
+fmodlib:
+	$(CC) $(CFLAGS) silence\devices\fmod\fmodglue.c
+	ilink32 silence\devices\fmod\fmodglue.obj,$(CLIB),,silence\devices\fmod\fmod.lib
+
+midaslib:
+	$(CC) $(CFLAGS) silence\devices\midas\midas.c
+	ilink32 silence\devices\midas\midas.obj,$(CLIB),,silence\devices\midas\midas.lib
