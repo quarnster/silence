@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.5 2000/10/08 18:01:57 fredde Exp $
+ * @version $Id: Channel.java,v 1.6 2000/10/12 15:04:42 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -51,16 +51,15 @@ class Channel {
 	float			rowVol;
 	float			finalVol;
 	int			fadeOutVol;
-	
 
 	private final double calcPitch(int note) {
 		if (currentInstrument.sample.length == 0) return 0;
-		note += currentInstrument.sample[0].relativeNote -1;
+		note += currentInstrument.sample[0].relativeNote - 1;
 
-		double period = 10*12*16*4 - note*16*4 - (currentInstrument.sample[0].fineTune >> 1);
-		double freq = 8363 * Math.pow(2, ((6 * 12 * 16 * 4 - period) / (12 * 16 * 4)));
+		int period = 10*12*16*4 - note*16*4 - (currentInstrument.sample[0].fineTune / 2);
+		double freq = 8363 * Math.pow(2, ((6 * 12 * 16 * 4D - period) / (12 * 16 * 4)));
 
-		return (1 / ((double) xm.deviceSampleRate / freq));
+		return  freq  / xm.deviceSampleRate;
 	}
 
 	private final float calcK() {
@@ -107,6 +106,7 @@ class Channel {
 						currentEffectParam = (eff << 4) + (currentEffectParam & 0xF) - 1;
 					}
 				}
+				break;
 		}
 	}
 
@@ -114,12 +114,12 @@ class Channel {
 		finalVol = rowVol;
 
 		if (currentNote == 97) {
+			finalVol *= ((float) fadeOutVol / 65536);
 			fadeOutVol -= currentInstrument.fadeoutVolume;
 			if (fadeOutVol <= 10) {
 				currentInstrument = null;
 				return;
 			}
-			finalVol *= ((float) fadeOutVol / 65536);
 		}
 
 		if (useVolEnv) {
@@ -145,6 +145,8 @@ class Channel {
 					} else {
 						volEnvK = calcK();
 					}
+				} else if (volEnvK == 0 && (volEnvPos == (volEnvSustain*2) && (volEnvType & 0x2) != 0)) {
+					volEnvK = calcK();
 				}
 				volEnvLength--;
 			} else if  (!(volEnvPos == (volEnvSustain*2) && (volEnvType & 0x2) != 0) && volEnvLength <= 0) {
@@ -282,30 +284,18 @@ class Channel {
 		}
 		if (currentEffectParam < 0) currentEffectParam = 256 + currentEffectParam;
 
-		rowVol = (((float) currentVolume / 64) * 32);
-
-		updateEffects();
+		rowVol = (((float) currentVolume / 64) * 0.125f);
 
 		return patternpos;
 	}
 
 	public final void updateTick() {
-		updateEffects();
-		if (currentInstrument != null) {
-			updateVolumes();
-		}
+		if (currentEffect != -1) updateEffects();
+		if (currentInstrument != null) updateVolumes();
 	}
 
-	// table from "A Programmer's guide to sound", page 347
-	final float halfTones[] = {
-		0.0F,			1.05946309F,	1.12246205F,	1.18920712F,
-		1.25992105F,	1.33483985F,	1.41421356F,	1.49830708F,
-		1.58740105F,	1.68179283F,	1.78179744F,	1.88774863F,
-		2.0F,			2.11892619F,	2.24492410F,	2.37841423F
-	};
-
 	final void play(int[] buffer, int off, int len) {
-		if (finalVol < 1 || currentNote == 0 || currentInstrument == null || currentInstrument.sample.length == 0) return;
+		if (currentNote == 0 || currentInstrument == null || currentInstrument.sample.length == 0) return;
 
 		for (int i = off; i < off+len; i++) {
 			int sample = (int) (currentInstrument.sample[0].sampleData[(int) currentPos] * finalVol);
@@ -339,6 +329,10 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.6  2000/10/12 15:04:42  fredde
+ * fixed volume envelopes after sustain.
+ * updated volumes to work with (8-bit sample) << 8
+ *
  * Revision 1.5  2000/10/08 18:01:57  fredde
  * changes to play the file even better.
  *
