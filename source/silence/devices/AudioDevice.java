@@ -26,7 +26,7 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.12 2000/06/25 18:43:23 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.13 2000/08/20 17:55:17 quarn Exp $
  */
 public abstract class AudioDevice {
 
@@ -35,7 +35,7 @@ public abstract class AudioDevice {
 	/**
 	 * Returns the name of this device
 	 */
-	public abstract String getName();
+//	public abstract String getName();
 
 	/**
 	 * Returns the home url for this device
@@ -49,11 +49,16 @@ public abstract class AudioDevice {
 	public abstract void init(boolean sound) throws AudioException;
 
 	/**
+	 * Loads the file
+	 * @param file The file to load
+	 */
+	public abstract void load(String file) throws AudioException;
+
+	/**
 	 * Start playing the file
-	 * @param file The file to play
 	 * @param loop Wheter to loop or not
 	 */
-	public abstract void play(String file, boolean loop) throws AudioException;
+	public abstract void play(boolean loop) throws AudioException;
 
 	/**
 	 * Stop playing the file
@@ -96,6 +101,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.13  2000/08/20 17:55:17  quarn
+ * split play into play and load
+ *
  * Revision 1.12  2000/06/25 18:43:23  quarn
  * new sync system
  *
