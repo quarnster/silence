@@ -20,7 +20,8 @@ CLASSES = silence/AudioException.class \
 	silence/devices/fmod/FmodDevice.class \
 	silence/devices/fmod/FmodException.class \
 	silence/devices/MuhmuDevice.class \
-	silence/Silence.class
+	silence/Silence.class \
+	silence/CallbackClass.class
 
 XM = 	silence/format/xm/Pattern.class \
 	silence/format/xm/Sample.class \

@@ -11,6 +11,7 @@ CFLAGS = --shared -ggdb -Wall -I$(JAVADIR)/include -I$(JAVADIR)/include/linux -I
 
 CLASSES = silence/AudioException.class \
 	silence/Silence.class \
+	silence/CallbackClass.class \
 	silence/devices/AudioDevice.class \
 	silence/devices/MuhmuDevice.class \
 	silence/devices/midas/MidasDevice.class \
