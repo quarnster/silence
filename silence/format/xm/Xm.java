@@ -1,4 +1,4 @@
-/* $Id: Xm.java,v 1.12 2003/08/22 12:36:46 fredde Exp $
+/* $Id: Xm.java,v 1.13 2003/09/01 09:04:34 fredde Exp $
  * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Xm
 	extends AudioFormat
@@ -47,6 +47,7 @@ public class Xm
 	int patternPos = 0;
 	int globalVolume = 64;
 
+	int patdelay = 0;
 	private int restTick = 0;
 
 
@@ -173,11 +174,18 @@ public class Xm
 		playingPattern = patorder[playingPatternPos];
 	}
 
+	private final static short clamp(int src) {
+		src = src < -32768 ? -32768 : src > 32767 ? 32767 : src;
+		return (short)src;
+	}
+
 	/**
 	 * Play...
 	 */
 	public int read(int[] buffer, int off, int len) {
 		int realLen = len;
+		int tmpLen = len;
+		int tmpOff = off;
 
 		for (int i = off; i < off+len; i++) {
 			buffer[i] = 0;
@@ -188,6 +196,7 @@ public class Xm
 			for (int j = 0; j < channel.length; j++)  {
 				channel[j].play(buffer, off, read);
 			}
+//			channel[7].play(buffer, off, read);
 
 			off += read;
 			len -= read;
@@ -195,42 +204,46 @@ public class Xm
 		}
 
 		for (int i = off; i < off+len; i += samplesPerTick) {
-			if (tick == defaultTempo) {
-				for (int j = 0; j < channel.length; j++)  {
-					patternPos = channel[j].update(pattern[playingPattern], patternPos);
+			if (tick >= defaultTempo) {
+				if (patdelay > 0) {
+					patdelay--;
+				} else {
+					for (int j = 0; j < channel.length; j++)  {
+						patternPos = channel[j].update(pattern[playingPattern], patternPos);
 
-					if (channel[j].em.currentEffect == 0x0D) { // pattern break
-						for (int rest = j+1; rest < channel.length; rest++) {
-							patternPos = channel[rest].update(pattern[playingPattern], patternPos);
-						}
-						playingPatternPos++;
-						playingPattern = patorder[playingPatternPos];
-						channel[j].em.currentEffect = -1;
-
-						patternPos = 0;
-
-						int endRow = channel[j].em.currentEffectParam;
-
-						for (int rows = 0; rows < endRow; rows++) {
-							for (int chan = 0; chan < channel.length; chan++) {
-								patternPos = channel[chan].skip(pattern[playingPattern], patternPos);
+						if (channel[j].em.currentEffect == 0x0D) { // pattern break
+							for (int rest = j+1; rest < channel.length; rest++) {
+								patternPos = channel[rest].update(pattern[playingPattern], patternPos);
 							}
+							playingPatternPos++;
+							playingPattern = patorder[playingPatternPos];
+							channel[j].em.currentEffect = -1;
+
+							patternPos = 0;
+
+							int endRow = channel[j].em.currentEffectParam;
+
+							for (int rows = 0; rows < endRow; rows++) {
+								for (int chan = 0; chan < channel.length; chan++) {
+									patternPos = channel[chan].skip(pattern[playingPattern], patternPos);
+								}
+							}
+
+							break;
 						}
-
-						break;
 					}
-				}
 
-				if (patternPos == pattern[playingPattern].data.length) {
-					patternPos = 0;
-					playingPatternPos++;
-					if (playingPatternPos == patorder.length) {
-						// TODO: end.....
-						playingPatternPos = 0;
+					if (patternPos == pattern[playingPattern].data.length) {
+						patternPos = 0;
+						playingPatternPos++;
+						if (playingPatternPos == patorder.length) {
+							// TODO: end.....
+							playingPatternPos = 0;
+						}
+						playingPattern = patorder[playingPatternPos];
 					}
-					playingPattern = patorder[playingPatternPos];
+					tick = 0;
 				}
-				tick = 0;
 			}
 			int read = samplesPerTick;
 			if (read > off+len-i) {
@@ -242,11 +255,18 @@ public class Xm
 				channel[j].updateTick();
 				channel[j].play(buffer, i, read);
 			}
+//			channel[7].updateTick();
+//			channel[7].play(buffer, i, read);
 			tick++;
+		}
+		for (int i = tmpOff; i < tmpOff+tmpLen; i++) {
+			int t = clamp(buffer[i])&0xffff;
+			buffer[i] = t << 16 | t;
 		}
 
 		return realLen;
 	}
+
 
 	public void setDevice(org.komplex.audio.AudioOutDevice device) {
 		super.setDevice(device);
@@ -263,6 +283,9 @@ public class Xm
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.13  2003/09/01 09:04:34  fredde
+ * clamping
+ *
  * Revision 1.12  2003/08/22 12:36:46  fredde
  * updated for EffectManager
  *
