@@ -1,5 +1,5 @@
 /* Sample.java - Stores information about a sample
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2002 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.6 2000/12/21 17:21:14 fredde Exp $
+ * @version $Id: Sample.java,v 1.7 2002/03/20 13:30:04 fredde Exp $
  */
 class Sample {
 	private int sampleLength = 0;
@@ -35,7 +35,7 @@ class Sample {
 
 	byte relativeNote = 0;
 	byte fineTune = 0;
-	byte[] sampleData;
+	short[] sampleData;
 	int	volume;
 
 
@@ -86,31 +86,34 @@ class Sample {
 			loopStart >>= 1;
 
 			byte[] temp = Xm.read(in, 2 * sampleLength);
-			sampleData = new byte[sampleLength];
+			sampleData = new short[sampleLength];
 
 			int tmpPos = 0;
 
 			int samp = 0;
 
 			for (int i = 0; i < sampleData.length; i++, tmpPos += 2) {
-				samp += Xm.make16Bit(temp, tmpPos);
-				sampleData[i] = (byte) (samp >> 8);
+				samp += Xm.make16Bit(temp, tmpPos)&0xffff;
+				sampleData[i] = (short) (samp);
 			}
 		} else {
-			sampleData = Xm.read(in, sampleLength);
+			sampleData = new short[sampleLength];
+			byte[] temp = Xm.read(in, sampleLength);
 			int samp = 0;
 
 			for (int i = 0; i < sampleData.length; i++) {
-				samp += sampleData[i]&0xff;
-				sampleData[i] = (byte) samp;
+				samp += temp[i]&0xff;
+				sampleData[i] = (short) (samp << 8);
 			}
-
 		}
 	}
 }
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.7  2002/03/20 13:30:04  fredde
+ * sampleData is now an array of shorts to assure 16-bit sound quality
+ *
  * Revision 1.6  2000/12/21 17:21:14  fredde
  * relativeNote, fineTune -> byte
  *
@@ -134,3 +137,5 @@ class Sample {
  * initial commit
  *
  */
+
+
