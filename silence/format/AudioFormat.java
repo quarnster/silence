@@ -24,10 +24,11 @@ import java.util.Hashtable;
 import org.komplex.audio.*;
 
 /**
- * The basic class for AudioFormats
- *
+ * The basic class for AudioFormats. If you want to add support
+ * for, lets say, .mp3-files this is the class to extend.
+ * 
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
+ * @version $Id: AudioFormat.java,v 1.2 2000/09/29 19:38:43 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -39,9 +40,6 @@ public abstract class AudioFormat
 	/** the samplerate for the device used */
 	public int deviceSampleRate = 0;
 
-	/** the volume */
-	protected double volume = 1;
-
 	/** play loud? */
 	protected boolean playLoud = true;
 
@@ -52,9 +50,40 @@ public abstract class AudioFormat
 	}
 
 	/**
-	 * Load the file
+	 * Adds a handler for the specified extension.
+	 * Example: <br><br>
+	 * <code>
+	 * AudioFormat.addFormat(".mp3", "mypackage.myformats.MyMp3Format");
+	 * </code>
+	 * <p>
+	 * Why is it like this and not <code>AudioFormat.addFormat(".mp3", new MyMp3Format())</code>?
+	 * <br>
+	 * Because if we do it like it is now the class does not have to
+	 * be loaded if it is not used. Also you do not have to ship
+	 * AudioFormats with your program that you know that you will not
+	 * use. I got the idea when I saw something simular in
+	 * <a href="http://www.sourceforge.net/projects/muhmuaudio">MuhmuAudio</a>
+	 * so greetings to Jarno.
+	 * 
+	 * @param extension The extension for the fileformat handled
+	 * @param handler The handler for the extension
 	 */
-	public void load(String file)
+	public static void addFormat(String extension, String handler) {
+		flist.put(extension, handler);
+	}
+
+	/**
+	 * Load the file. It can also be an URL in textformat:<br><br>
+	 * <code>load("http://httpsomewhere/afile")</code>,<br>
+	 * <code>load("ftp://ftpsomewhere/afile")</code>,<br>
+	 * etc...<br><br>
+	 *
+	 * All URLs supported by the java implementation
+	 * is also supported by silence.
+	 *
+	 * @param file The file (or URL) to load
+	 */
+	public final void load(String file)
 		throws Exception
 	{
 		if (file.indexOf(":") > 1) {
@@ -75,7 +104,7 @@ public abstract class AudioFormat
 	 *
 	 * @param format The format we wish to get the AudioFormat for
 	 */
-	public static AudioFormat getFormat(String format) {
+	public final static AudioFormat getFormat(String format) {
 		format = format.toLowerCase();
 
 		Object cl = flist.get(format);
@@ -94,15 +123,6 @@ public abstract class AudioFormat
 	}
 
 	/**
-	 * Sets the volume
-	 *
-	 * @param volume The new volume
-	 */
-	public void setVolume(double volume) {
-		this.volume = volume;
-	}
-
-	/**
 	 * Sets the device used for playing this AudioFormat
 	 *
 	 * @param device The device to use
@@ -115,7 +135,11 @@ public abstract class AudioFormat
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
- * Revision 1.1  2000/09/25 16:34:34  fredde
- * Initial revision
+ * Revision 1.2  2000/09/29 19:38:43  fredde
+ * Added some more javadoc, removed
+ * unused stuff and made some methods final
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
+ * initial commit
  *
  */
