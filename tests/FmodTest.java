@@ -26,14 +26,9 @@ import java.awt.event.*;
 /**
  * An example player for the FMOD device
  * @author Fredrik Ehnbom
- * @version $Id: FmodTest.java,v 1.2 2000/06/10 18:05:33 quarn Exp $
+ * @version $Id: FmodTest.java,v 1.3 2000/06/20 22:32:29 quarn Exp $
  */
 public class FmodTest extends Frame {
-
-	static {
-		// load the library for fmod
-		System.loadLibrary("fmodglue");
-	}
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
@@ -132,6 +127,9 @@ public class FmodTest extends Frame {
 /*
  * ChangeLog:
  * $Log: FmodTest.java,v $
+ * Revision 1.3  2000/06/20 22:32:29  quarn
+ * no need to load the libs
+ *
  * Revision 1.2  2000/06/10 18:05:33  quarn
  * fixed
  *

@@ -26,14 +26,9 @@ import java.awt.event.*;
 /**
  * An example player for the Bass device
  * @author Fredrik Ehnbom
- * @version $Id: BassTest.java,v 1.2 2000/06/11 20:44:40 quarn Exp $
+ * @version $Id: BassTest.java,v 1.3 2000/06/20 22:32:29 quarn Exp $
  */
 public class BassTest extends Frame {
-
-	static {
-		// load the library for bass
-		System.loadLibrary("bassglue");
-	}
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
@@ -132,6 +127,9 @@ public class BassTest extends Frame {
 /*
  * ChangeLog:
  * $Log: BassTest.java,v $
+ * Revision 1.3  2000/06/20 22:32:29  quarn
+ * no need to load the libs
+ *
  * Revision 1.2  2000/06/11 20:44:40  quarn
  * fixed main which started the FmodTest...
  *
