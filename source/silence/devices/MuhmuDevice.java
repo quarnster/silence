@@ -36,7 +36,7 @@ import silence.format.xm.Xm;
  * For more information about MuhmuAudio please visit
  * <a href="http://muhmuaudio.sourceforge.net">http://muhmuaudio.sourceforge.net</a>
  * @author Fredrik Ehnbom
- * @version $Id: MuhmuDevice.java,v 1.1 2000/06/08 16:23:51 quarn Exp $
+ * @version $Id: MuhmuDevice.java,v 1.2 2000/06/20 23:22:05 quarn Exp $
  */
 public class MuhmuDevice extends AudioDevice {
 
@@ -143,7 +143,7 @@ public class MuhmuDevice extends AudioDevice {
 	/**
 	 * Pause the playing of the file
 	 */
-	public void pause() throws AudioException {}
+	public void pause() {}
 
 	/**
 	 * This function is called when a sync event occurs
@@ -161,3 +161,10 @@ public class MuhmuDevice extends AudioDevice {
 	 */
 	public void close() {}
 }
+/*
+ * ChangeLog:
+ * $Log: MuhmuDevice.java,v $
+ * Revision 1.2  2000/06/20 23:22:05  quarn
+ * no need to throw an exception on pause
+ *
+ */
