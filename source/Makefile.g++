@@ -17,8 +17,13 @@ CLASSES = silence/AudioException.class \
 	silence/devices/fmod/FmodDevice.class \
 	silence/devices/fmod/FmodException.class
 
+XM = 	silence/format/xm/Pattern.class \
+	silence/format/xm/Sample.class \
+	silence/format/xm/Instrument.class \
+	silence/format/xm/Xm.class
 
-all: $(CLASSES)
+
+all: $(CLASSES) $(XM)
 
 dist: all nativelibs jar
 
@@ -32,6 +37,7 @@ clean:
 	rm -f silence/devices/*.class
 	rm -f silence/devices/midas/*.class
 	rm -f silence/devices/fmod/*.class
+	rm -f silence/format/xm/*.class
 	rm -f *.so 
 	rm -f *.jar
 jar:
