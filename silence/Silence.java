@@ -1,5 +1,5 @@
 /* Silence.java - The basic class for silence
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2001 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,15 +29,23 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.2 2000/09/29 19:36:56 fredde Exp $
+ * @version $Id: Silence.java,v 1.3 2001/01/06 10:39:48 fredde Exp $
  */
-public class Silence 
+public class Silence
 	implements AudioConstants
 {
 
 	private AudioOutDevice device = null;
 
 	public Silence() {
+	}
+
+	/**
+	 * Sets the device to use for audioplaying
+	 * @param device The AudioOutDevice
+	 */
+	public void setDevice(AudioOutDevice device) {
+		this.device = device;
 	}
 
 	/**
@@ -199,6 +207,9 @@ public class Silence
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.3  2001/01/06 10:39:48  fredde
+ * added the setDevice method
+ *
  * Revision 1.2  2000/09/29 19:36:56  fredde
  * removed unused stuff, added javadoc comments
  * and some new functions
