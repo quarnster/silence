@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.4 2001/01/04 18:52:58 fredde Exp $
+# $Id: Makefile,v 1.5 2001/01/06 10:40:23 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
@@ -23,6 +23,8 @@ formats: $(CLASSES) \
 	org/gjt/fredde/silence/format/xm/Channel.class \
 	org/gjt/fredde/silence/format/xm/Xm.class \
 	org/gjt/fredde/silence/format/au/Au.class \
+	org/gjt/fredde/silence/format/au/Decoder.class \
+	org/gjt/fredde/silence/format/au/MulawDecoder.class \
 	org/gjt/fredde/silence/format/ogg/Ogg.class
 
 tests: formats \
