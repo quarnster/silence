@@ -21,6 +21,10 @@ import java.io.*;
 import java.net.URL;
 import java.util.Hashtable;
 
+/// ADDED 27.4.2002 -> ///
+import java.util.zip.*; ///+
+/// <- ///
+
 import org.komplex.audio.*;
 
 /**
@@ -28,7 +32,7 @@ import org.komplex.audio.*;
  * for, lets say, .mp3-files this is the class to extend.
  *
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.6 2001/01/11 20:24:29 fredde Exp $
+ * @version $Id: AudioFormat.java,v 1.7 2002/04/27 14:49:32 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -86,7 +90,14 @@ public abstract class AudioFormat
 	{
 		if (file.indexOf(":") > 1) {
 			URL u = new URL(file);
-			load(new BufferedInputStream(u.openStream()));
+
+			/// ADDED 27.4.2002 -> ///
+			if (file.indexOf(".gz") > 1) { ///+
+				load(new BufferedInputStream(new GZIPInputStream(u.openStream()))); ///+
+			} else { ///+
+				load(new BufferedInputStream(u.openStream()));
+			} ///+
+			/// <- ///
 		} else {
 			load(new BufferedInputStream(new FileInputStream(file)));
 		}
@@ -138,6 +149,9 @@ public abstract class AudioFormat
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.7  2002/04/27 14:49:32  fredde
+ * added patch for .gz-files by Henrik Raula
+ *
  * Revision 1.6  2001/01/11 20:24:29  fredde
  * removed throws IOException from the close method
  *

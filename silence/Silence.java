@@ -29,7 +29,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.5 2001/01/27 18:17:02 fredde Exp $
+ * @version $Id: Silence.java,v 1.6 2002/04/27 14:49:40 fredde Exp $
  */
 public class Silence
 	implements AudioConstants
@@ -141,6 +141,13 @@ public class Silence
 
 		String end = file.substring(file.lastIndexOf("."), file.length());
 
+		/// -> ADDED 27.4.2002 ///
+		if (end.indexOf(".gz") != -1) {///+
+			end = file.substring(0, file.lastIndexOf("."));///+
+			end = end.substring(end.lastIndexOf("."), end.length());///+
+		}///+
+		/// <- ///
+
 		// get the AudioFormat for this file
 		AudioFormat format = AudioFormat.getFormat(end);
 
@@ -197,6 +204,9 @@ public class Silence
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.6  2002/04/27 14:49:40  fredde
+ * added patch for .gz-files by Henrik Raula
+ *
  * Revision 1.5  2001/01/27 18:17:02  fredde
  * removed that ridiculous nosound mode
  *
