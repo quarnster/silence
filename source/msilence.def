@@ -1,9 +1,0 @@
-LIBRARY     MSILENCE.DLL
-
-EXPORTS
-    Java_silence_devices_midas_MidasDevice_Nplay @4   ; Java_silence_devices_midas_MidasDevice_Nplay
-    Java_silence_devices_midas_MidasDevice_Nstop @5   ; Java_silence_devices_midas_MidasDevice_Nstop
-    Java_silence_devices_midas_MidasDevice_close @6   ; Java_silence_devices_midas_MidasDevice_close
-    Java_silence_devices_midas_MidasDevice_init @2   ; Java_silence_devices_midas_MidasDevice_init
-    Java_silence_devices_midas_MidasDevice_setVolume @3   ; Java_silence_devices_midas_MidasDevice_setVolume
-    Java_silence_devices_midas_MidasDevice_synced @1   ; Java_silence_devices_midas_MidasDevice_synced
