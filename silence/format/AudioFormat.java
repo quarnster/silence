@@ -32,7 +32,7 @@ import org.komplex.audio.*;
  * for, lets say, .mp3-files this is the class to extend.
  *
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.7 2002/04/27 14:49:32 fredde Exp $
+ * @version $Id: AudioFormat.java,v 1.8 2003/08/22 12:40:11 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -99,7 +99,11 @@ public abstract class AudioFormat
 			} ///+
 			/// <- ///
 		} else {
-			load(new BufferedInputStream(new FileInputStream(file)));
+			if (file.indexOf(".gz") > 1) {
+				load(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
+			} else {
+				load(new BufferedInputStream(new FileInputStream(file)));
+			}
 		}
 	}
 
@@ -149,6 +153,9 @@ public abstract class AudioFormat
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.8  2003/08/22 12:40:11  fredde
+ * now supports .gz-loading from local files also
+ *
  * Revision 1.7  2002/04/27 14:49:32  fredde
  * added patch for .gz-files by Henrik Raula
  *
