@@ -26,7 +26,7 @@ import java.awt.event.*;
 /**
  * An example player for the Bass device
  * @author Fredrik Ehnbom
- * @version $Id: BassTest.java,v 1.1 2000/06/10 18:04:39 quarn Exp $
+ * @version $Id: BassTest.java,v 1.2 2000/06/11 20:44:40 quarn Exp $
  */
 public class BassTest extends Frame {
 
@@ -125,13 +125,16 @@ public class BassTest extends Frame {
 		if (args.length != 1) {
 			System.out.println("Usage: java BassTest <song>");
 		} else {
-			new FmodTest(args[0]);
+			new BassTest(args[0]);
 		}
 	}
 }
 /*
  * ChangeLog:
  * $Log: BassTest.java,v $
+ * Revision 1.2  2000/06/11 20:44:40  quarn
+ * fixed main which started the FmodTest...
+ *
  * Revision 1.1  2000/06/10 18:04:39  quarn
  * A test for Bass
  *
