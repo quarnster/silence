@@ -28,7 +28,7 @@ import org.komplex.audio.*;
  * for, lets say, .mp3-files this is the class to extend.
  * 
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.2 2000/09/29 19:38:43 fredde Exp $
+ * @version $Id: AudioFormat.java,v 1.3 2000/12/21 17:15:00 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -42,6 +42,9 @@ public abstract class AudioFormat
 
 	/** play loud? */
 	protected boolean playLoud = true;
+
+	/** number of channels */
+	protected int channels = 0;
 
 	static {
 		// put all supported formats to the format list
@@ -97,7 +100,7 @@ public abstract class AudioFormat
 	/**
 	 * Load the file from a BufferedInputStream
 	 */
-	protected abstract void load(BufferedInputStream is) throws IOException;
+	public abstract void load(BufferedInputStream is) throws IOException;
 
 	/**
 	 * Gets the AudioFormat for the specified format
@@ -130,11 +133,15 @@ public abstract class AudioFormat
 	public void setDevice(AudioOutDevice device) {
 		playLoud = !(device instanceof org.komplex.audio.device.NoSoundDevice);
 		deviceSampleRate = device.getSampleRate();
+		channels = device.getChannels();
 	}
 }
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.3  2000/12/21 17:15:00  fredde
+ * added protected field "channels", made load(is) public
+ *
  * Revision 1.2  2000/09/29 19:38:43  fredde
  * Added some more javadoc, removed
  * unused stuff and made some methods final
