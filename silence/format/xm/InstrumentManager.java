@@ -1,4 +1,4 @@
-/* $Id: InstrumentManager.java,v 1.2 2003/08/22 06:54:49 fredde Exp $
+/* $Id: InstrumentManager.java,v 1.3 2003/08/22 12:39:07 fredde Exp $
  * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ package org.gjt.fredde.silence.format.xm;
  * This class handles the playing of an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class InstrumentManager {
 	Xm		xm;
@@ -221,8 +221,12 @@ public class InstrumentManager {
 						}
 					} else {
 						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-						volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
-						volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
+						if (volEnvPos+1 != currentInstrument.volumeEnvelopePoints.length) {
+							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
+							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
+						} else {
+							useVolEnv = false;
+						}
 					}
 				}
 				volEnvLength--;
@@ -268,6 +272,9 @@ public class InstrumentManager {
 /*
  * ChangeLog:
  * $Log: InstrumentManager.java,v $
+ * Revision 1.3  2003/08/22 12:39:07  fredde
+ * volume envelopfix
+ *
  * Revision 1.2  2003/08/22 06:54:49  fredde
  * loop fixes
  *
