@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.6 2000/10/12 15:04:42 fredde Exp $
+ * @version $Id: Channel.java,v 1.7 2000/10/14 19:09:04 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -56,8 +56,8 @@ class Channel {
 		if (currentInstrument.sample.length == 0) return 0;
 		note += currentInstrument.sample[0].relativeNote - 1;
 
-		int period = 10*12*16*4 - note*16*4 - (currentInstrument.sample[0].fineTune / 2);
-		double freq = 8363 * Math.pow(2, ((6 * 12 * 16 * 4D - period) / (12 * 16 * 4)));
+		double period = 10*12*16*4 - note*16*4 - ((double) currentInstrument.sample[0].fineTune / 2);
+		double freq = 8363 * Math.pow(2, ((6 * 12 * 16 * 4 - period) / (12 * 16 * 4)));
 
 		return  freq  / xm.deviceSampleRate;
 	}
@@ -284,7 +284,7 @@ class Channel {
 		}
 		if (currentEffectParam < 0) currentEffectParam = 256 + currentEffectParam;
 
-		rowVol = (((float) currentVolume / 64) * 0.125f);
+		rowVol = (((float) currentVolume / 64) * 32f);
 
 		return patternpos;
 	}
@@ -329,6 +329,10 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.7  2000/10/14 19:09:04  fredde
+ * changed volume stuff back to 32 since
+ * sampleData is of type byte[] again
+ *
  * Revision 1.6  2000/10/12 15:04:42  fredde
  * fixed volume envelopes after sustain.
  * updated volumes to work with (8-bit sample) << 8
