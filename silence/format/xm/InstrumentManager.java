@@ -1,4 +1,4 @@
-/* $Id: InstrumentManager.java,v 1.4 2003/08/23 07:35:25 fredde Exp $
+/* $Id: InstrumentManager.java,v 1.5 2003/08/23 13:44:59 fredde Exp $
  * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -21,23 +21,14 @@ package org.gjt.fredde.silence.format.xm;
  * This class handles the playing of an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class InstrumentManager {
 	Xm		xm;
 	int		fadeOutVol;
 
-	// volume envelope playing info
-	boolean		useVolEnv		= false;
-	boolean		sustain			= false;
-	float		volEnvK			= 0;
 	float		volEnv			= 64;
-	int		volEnvLoopLen		= 0;
-	int		volEnvLength		= 0;
-	int		volEnvType		= 0;
-	int		volEnvPos		= 0;
-	int		volEnvSustain		= 0;
-
+	Envelope volumeEnvelope			= new Envelope();
 
 	private Instrument currentInstrument = null;
 
@@ -65,6 +56,7 @@ public class InstrumentManager {
 			currentInstrument = null;
 		} else {
 			currentInstrument = instrument;
+			volumeEnvelope.setData(instrument);
 		}
 		active = false;
 	}
@@ -86,6 +78,7 @@ public class InstrumentManager {
 
 	public void release() {
 		release = true;
+		volumeEnvelope.release();
 	}
 
 	public void setNote(int note) {
@@ -113,32 +106,7 @@ public class InstrumentManager {
 		active = true;
 		currentVolume = 64;
 		fadeOutVol = 65536;
-
-		if (currentInstrument.volumeEnvelopePoints.length != 0 && ((currentInstrument.volType & 0x1) != 0)) {
-			volEnv		= currentInstrument.volumeEnvelopePoints[0].y;
-			volEnvPos	= 0;
-			volEnvK		= currentInstrument.volumeEnvInfo[volEnvPos].y;
-			volEnvLength	= (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
-			volEnvSustain	= currentInstrument.volSustain;
-			volEnvType	= currentInstrument.volType;
-			useVolEnv	= true;
-
-			if ((volEnvType & 0x4) != 0)
-				volEnvLoopLen = currentInstrument.volLoopEnd;
-			else
-				volEnvLoopLen = currentInstrument.volumeEnvelopePoints.length - 1;
-
-			sustain 	= (volEnvPos == volEnvSustain && (volEnvType & 0x2) != 0);
-		} else {
-			useVolEnv	= false;
-			volEnv		= 64;
-			volEnvK		= 0;
-			volEnvPos	= 0;
-		}
-	}
-
-	public int clamp(int src) {
-		return src&0xffff; // < -32768 ? -32768 : src > 32767 ? 32767 : src;
+		volumeEnvelope.reset();
 	}
 
 	private void pingpong(Sample s) {
@@ -158,6 +126,7 @@ public class InstrumentManager {
 	public void play(int[] buffer, int off, int len) {
 		if (!active || currentInstrument == null/* || currentNote == 0 || finalVol < 0.01*/) return;
 		Sample s = currentInstrument.sample[0];
+		if (s.sampleData.length == 0) return;
 
 
 		for (int i = off; i < off+len; i++) {
@@ -201,80 +170,21 @@ public class InstrumentManager {
 		if (currentInstrument != null && currentInstrument.sample.length > 0) rowVol *= (currentInstrument.sample[0].volume / 64f);
 		finalVol = rowVol;
 
-		if (release) {
-			finalVol *= ((float) fadeOutVol / 65536);
-			fadeOutVol -= currentInstrument.fadeoutVolume;
-			if (fadeOutVol <= 10) {
-				active = false;
-				return;
-			}
-		}
+		volEnv = volumeEnvelope.getValue();
 		finalVol *= (volEnv / 64);
 		if (xm.globalVolume != 64) finalVol *= ((double) xm.globalVolume / 64);
 
-		if (useVolEnv) {
-			if (release && volEnvLength != -1) {
-				volEnv += volEnvK;
-				if (volEnvLength <= 0) {
-					volEnvPos++;
 
-					if (volEnvPos == volEnvLoopLen) {
-						if ((volEnvType & 0x4) != 0) {
-							volEnvPos = currentInstrument.volLoopStart;
-							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
-							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
-						} else {
-							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-							volEnvK = 0;
-							useVolEnv = false;
-							if (volEnv <= 1) {
-								active = false;
-								return;
-							}
-						}
-					} else {
-						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-						if (volEnvPos+1 != currentInstrument.volumeEnvelopePoints.length) {
-							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
-							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
-						} else {
-							useVolEnv = false;
-						}
-					}
+		if (release) {
+			if (!volumeEnvelope.use()) {
+				active = false;
+			} else {
+				finalVol *= ((float) fadeOutVol / 65536);
+				fadeOutVol -= currentInstrument.fadeoutVolume;
+				if (fadeOutVol <= 10) {
+					active = false;
+					return;
 				}
-				volEnvLength--;
-			} else if (!sustain) { // note != 97
-				volEnv += volEnvK;
-				if  (volEnvLength <= 0) {
-					volEnvPos++;
-
-					if ((volEnvPos == volEnvSustain && (volEnvType & 0x2) != 0)) {
-						if (volEnvPos+1 != currentInstrument.volumeEnvelopePoints.length) {
-							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
-							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
-						}
-						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-						sustain = true;
-					} else if (volEnvPos == volEnvLoopLen) {
-						if ((volEnvType & 0x4) != 0) { // loop
-							volEnvPos = currentInstrument.volLoopStart;
-							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-							volEnvLoopLen = currentInstrument.volLoopEnd;
-							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
-							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
-						} else {
-							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-							volEnvK = 0;
-							useVolEnv = false;
-						}
-					} else {
-						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
-						volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
-						volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
-					}
-				}
-				volEnvLength--;
 			}
 		}
 	}
@@ -283,6 +193,9 @@ public class InstrumentManager {
 /*
  * ChangeLog:
  * $Log: InstrumentManager.java,v $
+ * Revision 1.5  2003/08/23 13:44:59  fredde
+ * moved envelope stuff from InstrumentManager to Envelope
+ *
  * Revision 1.4  2003/08/23 07:35:25  fredde
  * porta implemented, volumeenvelope fixes, release fixes
  *
