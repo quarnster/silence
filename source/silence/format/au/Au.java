@@ -27,7 +27,7 @@ import silence.format.*;
  * can find at http://www.wotsit.org
  * 
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.2 2000/08/25 17:38:44 quarn Exp $
+ * @version $Id: Au.java,v 1.3 2000/09/03 17:41:39 quarn Exp $
  */
 public class Au extends AudioFormat {
 
@@ -117,7 +117,7 @@ public class Au extends AudioFormat {
 	 * Play...
 	 */
 	public int read(int[] buffer, int off, int len) {
-		// do lots of stuff...
+		if (!playLoud) return len;
 		for (int i = off; i < len; i++) {
 			int currsamp = sampledata[(int) samppos];
 			currsamp *= volume;
@@ -140,6 +140,9 @@ public class Au extends AudioFormat {
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.3  2000/09/03 17:41:39  quarn
+ * do not play sound if using NoSoundDevice
+ *
  * Revision 1.2  2000/08/25 17:38:44  quarn
  * updated
  *
