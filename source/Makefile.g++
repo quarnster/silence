@@ -53,8 +53,8 @@ jar:
 	silence/devices/*.class \
 	silence/devices/midas/*.class \
 	silence/devices/bass/*.class \
-	silence/devices/formats/xm/*.class \
-	silence/devices/fmod/*.class
+	silence/devices/fmod/*.class \
+	silence/format/xm/*.class \
 
 nativelib:
 	$(CC) $(CFLAGS) silence/devices/midas/midasglue.c -lmidas -o libsilence.so
