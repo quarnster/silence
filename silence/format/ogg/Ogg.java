@@ -30,7 +30,7 @@ import com.jcraft.jorbis.*;
  * Original author: ymnk <ymnk@jcraft.com>
  *
  * @author Fredrik Ehnbom
- * @version $Id: Ogg.java,v 1.2 2001/01/06 10:43:18 fredde Exp $
+ * @version $Id: Ogg.java,v 1.3 2001/01/08 19:49:35 fredde Exp $
  */
 public class Ogg
 	extends AudioFormat
@@ -350,12 +350,16 @@ mainLoop:
 
 	public void setDevice(org.komplex.audio.AudioOutDevice device) {
 		super.setDevice(device);
-		pitch = ((float) vi.rate / deviceSampleRate);
+		pitch = ((float) vi.rate / device.getSampleRate());
 	}
 }
 /*
  * ChangeLog:
  * $Log: Ogg.java,v $
+ * Revision 1.3  2001/01/08 19:49:35  fredde
+ * updated now that the AudioFormat just saves the device
+ * instead of lots of data in different variables
+ *
  * Revision 1.2  2001/01/06 10:43:18  fredde
  * now works in different freqs
  *

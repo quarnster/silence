@@ -29,7 +29,7 @@ import org.komplex.audio.*;
  * can find at http://www.wotsit.org
  *
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.4 2001/01/06 10:41:15 fredde Exp $
+ * @version $Id: Au.java,v 1.5 2001/01/08 19:49:35 fredde Exp $
  */
 public class Au
 	extends AudioFormat
@@ -110,8 +110,6 @@ public class Au
 	 * Play...
 	 */
 	public int read(int[] buffer, int off, int len) {
-		if (!playLoud) return len;
-
 		try {
 			for (int i = off; i < off+len; ) {
 	        		if (samppos >= samples.length) {
@@ -152,7 +150,7 @@ public class Au
 
 	public void setDevice(AudioOutDevice device) {
 		super.setDevice(device);
-		pitch = channels * ((double) this.samplerate / deviceSampleRate);
+		pitch = device.getChannels() * ((double) this.samplerate / device.getSampleRate());
 	}
 
 	public void close()
@@ -164,6 +162,10 @@ public class Au
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.5  2001/01/08 19:49:35  fredde
+ * updated now that the AudioFormat just saves the device
+ * instead of lots of data in different variables
+ *
  * Revision 1.4  2001/01/06 10:41:15  fredde
  * streams data, stereo working, using decoders
  *

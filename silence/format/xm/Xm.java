@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.7 2001/01/04 18:56:42 fredde Exp $
+ * @version $Id: Xm.java,v 1.8 2001/01/08 19:49:35 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
@@ -38,6 +38,7 @@ public class Xm
 	int defaultBpm = 0;
 	int tempo = 0;
 
+	int deviceSampleRate = 0;
 	int samplesPerTick;
 
 	int playingPatternPos = 0;
@@ -46,6 +47,7 @@ public class Xm
 	int globalVolume = 64;
 
 	private int restTick = 0;
+
 
 	private	Pattern[]	pattern;
 	protected Instrument[]	instrument;
@@ -246,6 +248,7 @@ public class Xm
 
 	public void setDevice(org.komplex.audio.AudioOutDevice device) {
 		super.setDevice(device);
+		deviceSampleRate = device.getSampleRate();
 		samplesPerTick = (5 * deviceSampleRate) / (2 * defaultBpm);
 	}
 
@@ -254,6 +257,10 @@ public class Xm
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.8  2001/01/08 19:49:35  fredde
+ * updated now that the AudioFormat just saves the device
+ * instead of lots of data in different variables
+ *
  * Revision 1.7  2001/01/04 18:56:42  fredde
  * added close method
  *
