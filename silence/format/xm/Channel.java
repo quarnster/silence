@@ -20,10 +20,10 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that stores channel data
  *
- * @version $Id: Channel.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
+ * @version $Id: Channel.java,v 1.2 2000/09/29 19:39:48 fredde Exp $
  * @author Fredrik Ehnbom
  */
-public class Channel {
+class Channel {
 	private Xm xm;
 
 	public Channel(Xm xm) {
@@ -72,7 +72,10 @@ public class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
- * Revision 1.1  2000/09/25 16:34:34  fredde
- * Initial revision
+ * Revision 1.2  2000/09/29 19:39:48  fredde
+ * no need to be public
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
+ * initial commit
  *
  */
