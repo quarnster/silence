@@ -27,7 +27,7 @@ import org.gjt.fredde.silence.format.*;
  * A simple example player for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: SimplePlayTest.java,v 1.2 2000/09/30 09:15:22 fredde Exp $
+ * @version $Id: SimplePlayTest.java,v 1.3 2000/10/14 19:13:54 fredde Exp $
  */
 public class SimplePlayTest
 	extends Frame
@@ -36,23 +36,37 @@ public class SimplePlayTest
 	private Silence silence = new Silence();
 
 	public static void main(String args[]) {
-		if (args.length != 1) {
-			System.out.println("usage: java SimplePlayTest <music file>");
+		if (args.length < 1) {
+			System.out.println("usage: java SimplePlayTest <music file> (<khz>)");
+			System.out.println("(<khz>: 44, 22, 11)");
 			System.exit(1);
+		} else if (args.length == 1) {
+			SimplePlayTest test = new SimplePlayTest(args[0], "44");	
 		} else {
-			SimplePlayTest test = new SimplePlayTest(args[0]);
+			SimplePlayTest test = new SimplePlayTest(args[0], args[1]);
 		}
 	}
 
-	public SimplePlayTest(String file) {
+	public SimplePlayTest(String file, String khz) {
 		super("a simple test...");
 		addWindowListener(this);
 		setSize(320, 240);
 		show();
 
 		try {
+			int dform = 0;
+			if (khz.equals("44")) {
+				dform = Silence.FORMAT_PCM44K16S;
+			} else if (khz.equals("22")) {
+				dform = Silence.FORMAT_PCM22K16S;
+			} else if (khz.equals("11")) {
+				dform = Silence.FORMAT_PCM11K16S;
+			} else {
+				System.err.println("<khz>: 44, 22, 11");
+				System.exit(1);
+			}
 			// initialize silence
-			silence.init();
+			silence.init(dform);
 
 			// load the specified file
 			AudioFormat format = silence.load(file);
@@ -82,6 +96,9 @@ public class SimplePlayTest
 /*
  * ChangeLog:
  * $Log: SimplePlayTest.java,v $
+ * Revision 1.3  2000/10/14 19:13:54  fredde
+ * you can specify the khz used in the commandline
+ *
  * Revision 1.2  2000/09/30 09:15:22  fredde
  * does not have to be a thread
  *
