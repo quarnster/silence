@@ -1,5 +1,5 @@
 /* Channel.java - Handles a channel
- * Copyright (C) 2000-2001 Fredrik Ehnbom
+ * Copyright (C) 2000-2002 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.9 2001/01/04 18:55:59 fredde Exp $
+ * @version $Id: Channel.java,v 1.10 2002/03/20 13:37:25 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -35,9 +35,12 @@ class Channel {
 	int		currentVolume		= 64;
 	int		currentEffect		= -1;
 	int		currentEffectParam	= 0;
-	double		currentPitch		= 0;
-	double		currentPos		= 0;
-	double		currentLoopLen		= 0;
+
+	int		currentPitch		= 0;
+	int		currentPos		= 0;
+
+	int		currentLoopStart	= 0;
+	int		currentLoopEnd		= 0;
 
 	boolean		useVolEnv		= false;
 	boolean		sustain			= false;
@@ -53,34 +56,89 @@ class Channel {
 	float		finalVol;
 	int		fadeOutVol;
 
+	private final float volumeScale = 0.25f;
+
 	private final double calcPitch(int note) {
 		if (currentInstrument.sample.length == 0) return 0;
-		note += currentInstrument.sample[0].relativeNote - 1;
+		note += (currentInstrument.sample[0].relativeNote - 1);
 
 		int period = (10*12*16*4) - (note*16*4) - (currentInstrument.sample[0].fineTune / 2);
 
 		double freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
-		double pitch = freq  / (double) xm.deviceSampleRate;
+		double pitch = (freq / (double) xm.deviceSampleRate);
 
 		return  pitch;
 	}
 
 	private final void updateEffects() {
 		switch (currentEffect) {
+/*
+			case 0x01: // Porta up
+				if (qxm.tick == 0) return;
+				porta -= currentEffectParam << 2;
+
+				if (porta < -856*4) {
+					porta = -856*4;
+					currentEffect = -1;
+				}
+				setPitch(calcPitch(currentNote));
+				break;
+			case 0x02: // Porta down
+				if (qxm.tick == 0) return;
+				porta += currentEffectParam << 2;
+
+				if (porta > 856*4) {
+					porta = 856*4;
+					currentEffect = -1;
+				}
+				setPitch(calcPitch(currentNote));
+				break;
+			case 0x03: // Porta slide
+
+				if (porta < portaTarget) {
+					porta += currentEffectParam << 2;
+
+					if (porta > portaTarget) {
+						porta = portaTarget;
+						currentEffect = -1;
+					}
+				} else {
+					porta -= currentEffectParam << 2;
+
+					if (porta < portaTarget) {
+						porta = portaTarget;
+						currentEffect = -1;
+					}
+				}
+
+				if (currentEffect == -1) {
+					porta = 0;
+					currentNote = portaNote;
+					setPitch(calcPitch(currentNote));
+				}
+				break;
+			case 0x09: // sample offset
+				currentEffect = -1;
+
+				setPosition(currentEffectParam << 8);
+				break;
+*/
 			case 0x0A: // Volume slide
 				currentVolume += (currentEffectParam & 0xF0) != 0 ?
 							 (currentEffectParam >> 4) & 0xF :
 							-(currentEffectParam & 0xF);
 
 				currentVolume = currentVolume < 0 ? 0 : currentVolume > 64 ? 64 : currentVolume;
-				rowVol = (( currentVolume / 64f) * 32f);
+				rowVol = (( currentVolume / 64f) * volumeScale);
+
+				if (currentInstrument != null && currentInstrument.sample.length > 0) rowVol *= (currentInstrument.sample[0].volume / 64f);
 
 				if (currentVolume == 0 && (currentEffectParam & 0xF0) == 0) currentEffect = -1;
 				break;
 			case 0x0C: // set volume
 				currentVolume = currentEffectParam;
 				currentEffect = -1;
-				rowVol = (((float) currentVolume / 64) * 32f);
+				rowVol = (((float) currentVolume / 64) * volumeScale);
 				if (currentInstrument != null) rowVol *= ((float) currentInstrument.sample[0].volume / 64);
 
 				break;
@@ -116,6 +174,14 @@ class Channel {
 						(currentEffectParam >> 4) & 0xF :
 						-(currentEffectParam & 0xF);
 				break;
+/*
+			case 0x1B: // Multi retrig note (Rxx)
+				if (qxm.tick == 0) return;
+				if (qxm.tick % currentEffectParam == 0) {
+					this.trigger();
+				}
+				break;
+*/
 			default: // unknown effect
 				currentEffect = -1;
 				break;
@@ -228,9 +294,11 @@ class Channel {
 			if ((check & 0x2) != 0) {
 				currentEffect = -1;
 				currentInstrument	= xm.instrument[pattern.data[patternpos++] - 1];
-				currentLoopLen		= currentInstrument.sample[0].sampleData.length - 1;
-				currentPitch		= calcPitch(currentNote);
-				currentPos			= 0;
+				currentLoopEnd		= (currentInstrument.sample[0].sampleData.length - 1)<<10;
+				currentLoopStart	= (currentInstrument.sample[0].loopStart) << 10;
+				double tp		= calcPitch(currentNote);
+				currentPitch		= (int) (tp * 1024);
+				currentPos		= 0;
 				currentVolume		= 64;
 				fadeOutVol			= 65536;
 
@@ -293,9 +361,10 @@ class Channel {
 			if ((check & 0x10) != 0)
 				currentEffectParam = pattern.data[patternpos++]&0xff;
 		} else {
-			currentNote			= check;
+			currentNote		= check;
 			currentInstrument	= xm.instrument[pattern.data[patternpos++] - 1];
-			currentLoopLen		= currentInstrument.sample[0].sampleData.length - 1;
+			currentLoopEnd		= (currentInstrument.sample[0].sampleData.length - 1)<<10;
+			currentLoopStart	= (currentInstrument.sample[0].loopStart) << 10;
 			currentVolume		= 64;
 
 			int tmp = pattern.data[patternpos++]&0xff;
@@ -343,11 +412,12 @@ class Channel {
 				volEnvPos	= 0;
 			}
 
-			currentPitch = calcPitch(currentNote);
-			currentPos = 0;
+			double tp 	= calcPitch(currentNote);
+			currentPitch	= (int) (tp *1024);
+			currentPos	= 0;
 		}
 
-		rowVol = (( currentVolume / 64f) * 32f);
+		rowVol = (( currentVolume / 64f) * volumeScale);
 		if (currentInstrument != null) rowVol *= (currentInstrument.sample[0].volume / 64f);
 
 		return patternpos;
@@ -359,30 +429,43 @@ class Channel {
 	}
 
 	final void play(int[] buffer, int off, int len) {
-		if (currentInstrument == null || finalVol < 1 || currentNote == 0) return;
+		if (currentInstrument == null || finalVol < 0.01 || currentNote == 0) return;
 
 		for (int i = off; i < off+len; i++) {
-			int sample = (int) (currentInstrument.sample[0].sampleData[(int) currentPos] * finalVol);
-			buffer[i] += (sample & 65535) | (sample << 16);
+			if ((currentPos >> 10) >=  currentInstrument.sample[0].sampleData.length) {
+				System.out.println("currentPos: " + (currentPos>>10) + ", length: " + currentInstrument.sample[0].sampleData.length + ", loop: " + (currentLoopEnd>>10) + ", currentPitch:  " + currentPitch + ", currentLoopStart: " + (currentLoopStart>>10));
+			}
+			int sample = (int) (currentInstrument.sample[0].sampleData[(int) (currentPos>>10)] * finalVol);
+			short right = (short) ((buffer[i] >> 16)&0xffff);
+			short left  = (short) (buffer[i] & 0xffff);
+
+			buffer[i] += sample << 16 | sample;
+			
 
 			currentPos += currentPitch;
-			currentLoopLen += (currentPitch < 0) ? currentPitch : -currentPitch;
 
-			if (currentLoopLen <= 0) {
+			if (currentPos < currentLoopStart) {
+				if (currentPitch < 0) {
+					currentPitch = - currentPitch;
+					currentPos = currentLoopStart - currentPos;
+					currentPos += currentLoopStart;
+				}
+			} else if (currentPos >= currentLoopEnd) {
 				if ((currentInstrument.sample[0].loopType & 0x2) != 0) {
 					// pingpong loop
 					currentPitch = -currentPitch;
 
-					if (currentPitch < 0) {
-						currentPos = currentInstrument.sample[0].loopStart + currentInstrument.sample[0].loopEnd-1;
-					} else {
-						currentPos = currentInstrument.sample[0].loopStart;
-					}
-					currentLoopLen = currentInstrument.sample[0].loopEnd;
+					currentPos = currentLoopEnd - currentPos;
+					currentPos += currentLoopEnd;
+					if (currentPos < currentLoopStart) currentPos = currentLoopStart;
+
+					currentLoopEnd = currentLoopStart + (currentInstrument.sample[0].loopEnd << 10);
 				} else if ((currentInstrument.sample[0].loopType & 0x1) != 0) {
 					// forward loop
-					currentPos = currentInstrument.sample[0].loopStart;
-					currentLoopLen = currentInstrument.sample[0].loopEnd;
+					currentPos += currentLoopStart - currentLoopEnd;
+
+					if (currentPos < currentLoopStart) currentPos = currentLoopStart;
+					currentLoopEnd = currentLoopStart + (currentInstrument.sample[0].loopEnd << 10);
 				} else {
 					// no loop
 					currentInstrument = null;
@@ -391,11 +474,21 @@ class Channel {
 				}
 			}
 		}
+
 	}
 }
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.10  2002/03/20 13:37:25  fredde
+ * whoa! lots of changes!
+ * among others:
+ * * fixed looping (so that some chiptunes does not play false anymore :))
+ * * pitch, currentPos and some more stuff now uses fixedpoint maths
+ * * added a volumeScale variable for easier changing of the volumescale
+ * * a couple of effects that I had implemented in my xm-player for muhmuaudio 0.2
+ *   have been copied and pasted into the file. they are commented out though
+ *
  * Revision 1.9  2001/01/04 18:55:59  fredde
  * some smaller changes
  *
@@ -428,3 +521,6 @@ class Channel {
  * initial commit
  *
  */
+
+
+
