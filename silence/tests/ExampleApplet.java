@@ -27,7 +27,7 @@ import org.gjt.fredde.silence.format.*;
  * An example applet for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: ExampleApplet.java,v 1.1 2001/01/11 20:28:26 fredde Exp $
+ * @version $Id: ExampleApplet.java,v 1.2 2001/01/27 18:18:01 fredde Exp $
  */
 public class ExampleApplet
 	extends Applet
@@ -60,7 +60,7 @@ public class ExampleApplet
 			}
 
 			// initialize silence
-			silence.init(dform);
+			silence.init(dform, this);
 			text[textPos++] = "using device \"" + silence.getDevice() + "\"";
 
 			// load the specified file
@@ -91,6 +91,11 @@ public class ExampleApplet
 	}
 
 	public void paint(Graphics g) {
+		g.setColor(new Color(224, 224, 224));
+		Dimension d = getSize();
+		g.fillRect(0, 0, d.width, d.height);
+
+		g.setColor(Color.black);
 		for (int i = 0; i < text.length; i++) {
 			if (text[i] == null) continue;
 
@@ -101,6 +106,9 @@ public class ExampleApplet
 /*
  * ChangeLog:
  * $Log: ExampleApplet.java,v $
+ * Revision 1.2  2001/01/27 18:18:01  fredde
+ * some fixes
+ *
  * Revision 1.1  2001/01/11 20:28:26  fredde
  * initial commit
  *
