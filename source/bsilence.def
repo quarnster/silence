@@ -1,0 +1,11 @@
+LIBRARY     BSILENCE.DLL
+
+EXPORTS
+    Java_silence_devices_bass_BassDevice_Nplay @4   ; Java_silence_devices_bass_BassDevice_Nplay
+    Java_silence_devices_bass_BassDevice_Nstop @5   ; Java_silence_devices_bass_BassDevice_Nstop
+    Java_silence_devices_bass_BassDevice_close @7   ; Java_silence_devices_bass_BassDevice_close
+    Java_silence_devices_bass_BassDevice_init @2   ; Java_silence_devices_bass_BassDevice_init
+    Java_silence_devices_bass_BassDevice_pause @6   ; Java_silence_devices_bass_BassDevice_pause
+    Java_silence_devices_bass_BassDevice_setVolume @3   ; Java_silence_devices_bass_BassDevice_setVolume
+    Java_silence_devices_bass_BassDevice_synced @1   ; Java_silence_devices_bass_BassDevice_synced
+
