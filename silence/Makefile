@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.1 2000/09/25 16:34:35 fredde Exp $
+# $Id: Makefile,v 1.2 2000/09/29 19:32:58 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
@@ -13,13 +13,17 @@ CLASSES = org/gjt/fredde/silence/AudioException.class \
 
 all: $(CLASSES) formats
 
-formats: org/gjt/fredde/silence/format/AudioFormat.class \
+formats: $(CLASSES) \
+	org/gjt/fredde/silence/format/AudioFormat.class \
 	org/gjt/fredde/silence/format/xm/Pattern.class \
 	org/gjt/fredde/silence/format/xm/Sample.class \
 	org/gjt/fredde/silence/format/xm/Instrument.class \
 	org/gjt/fredde/silence/format/xm/Channel.class \
 	org/gjt/fredde/silence/format/xm/Xm.class \
 	org/gjt/fredde/silence/format/au/Au.class
+
+tests: formats \
+	tests/SimplePlayTest.class
 
 javadoc:
 	mkdir javadoc
@@ -29,7 +33,7 @@ javadoc:
 	org.gjt.fredde.silence.format.xm \
 	org.gjt.fredde.silence.format.au
 
-dist: all javadoc
+dist: all tests javadoc
 
 .java.class:
 	$(JAVAC) $(JAVAFLAGS) $<
