@@ -4,7 +4,7 @@ endif
 
 CLASSPATH = ./
 JAVAC = jikes
-JAVAFLAGS = -g -verbose -deprecation
+JAVAFLAGS = -g -deprecation
 JAVADIR = /usr/local/jdk1.2.2
 MIDASDIR = /usr/local/src/midas-1.1.2
 
@@ -20,8 +20,7 @@ endif
 
 .SUFFIXES: .class .java .c .o
 
-CLASSES = silence/Silence.class \
-	silence/AudioException.class \
+CLASSES = silence/AudioException.class \
 	silence/devices/AudioDevice.class \
 	silence/devices/midas/MidasDevice.class \
 	silence/devices/midas/MidasException.class
