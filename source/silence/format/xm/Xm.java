@@ -25,19 +25,19 @@ import silence.format.AudioFormat;
 /**
  * The general xm class
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.3 2000/07/21 09:43:10 quarn Exp $
+ * @version $Id: Xm.java,v 1.4 2000/09/03 17:47:22 quarn Exp $
  */
 public class Xm extends AudioFormat {
 
 	private String title = "";
 	private String tracker = "";
-	private int songlength = 0;
-	private int patnum = 0;
 	private int patorder[];
-	private int instrnum = 0;
-	private int channels = 0;
-	private Pattern[] pattern;
-	private Instrument[] instrument;
+
+	private int patternPos = 0;
+
+	private	Pattern[]	pattern;
+	protected Instrument[]	instrument;
+	private	Channel[]	channel;
 
 	public Xm() {
 	}
@@ -49,14 +49,11 @@ public class Xm extends AudioFormat {
 	protected void load(BufferedInputStream in) throws IOException {
 		readGeneralInfo(in);
 
-		pattern = new Pattern[patnum];
-		instrument = new Instrument[instrnum];
-
-		for (int i = 0; i < patnum; i++) {
-			pattern[i] = new Pattern(channels, in);
+		for (int i = 0; i < pattern.length; i++) {
+			pattern[i] = new Pattern(channel.length, in);
 		}
 
-		for (int i = 0; i < instrnum; i++) {
+		for (int i = 0; i < instrument.length; i++) {
 			instrument[i] = new Instrument(in);
 		}
 		in.close();
@@ -98,9 +95,7 @@ public class Xm extends AudioFormat {
 		b = new byte[2];
 		in.read(b);
 		System.out.println("song length: " +  b[0]);
-
-		songlength = (int) b[0];
-
+		patorder = new int[b[0]];
 
 		// Restart position
 		b = new byte[2];
@@ -112,20 +107,24 @@ public class Xm extends AudioFormat {
 		b = new byte[2];
 		in.read(b);
 		System.out.println("Number of channels: " + b[0]);
-		channels = b[0];
+		channel = new Channel[b[0]];
+
+		for (int i = 0; i < channel.length; i++) {
+			channel[i] = new Channel(this);
+		}
 
 
 		// Number of patterns (max 128)
 		b = new byte[2];
 		in.read(b);
 		System.out.println("Number of patterns: " + b[0]);
-		patnum = (int) b[0];
+		pattern = new Pattern[b[0]];
 
 		// Number of instruments (max 128)
 		b = new byte[2];
 		in.read(b);
-		instrnum = (int) ((b[0] < 0) ? 256 + b[0] : b[0]);
-		System.out.println("Number of instruments: " + instrnum);
+		instrument = new Instrument[(int) ((b[0] < 0) ? 256 + b[0] : b[0])];
+		System.out.println("Number of instruments: " + instrument.length);
 
 		// Flags: bit 0: 0 = Amiga frequency table;
 		//               1 = Linear frequency table
@@ -145,45 +144,31 @@ public class Xm extends AudioFormat {
 		// Pattern order table
 		b = new byte[256];
 		in.read(b);
-		patorder = new int[songlength];
 
 		System.out.println("Pattern order table: ");
-		for (int i = 0; i < songlength; i++) {
-			System.out.print(b[i] + ", ");
+		for (int i = 0; i < patorder.length; i++) {
+			if (i+1 != patorder.length) System.out.print(b[i] + ", ");
+			else System.out.println(b[i]);
 
 			patorder[i] = b[i];
 		}
-		System.out.println();
 	}
-
-	int pos = 0;
-	int ins = 0;
 
 	/**
 	 * Play...
 	 */
 	public int read(int[] buffer, int off, int len) {
-		// do lots of stuff...
+		patternPos += channel[0].update(pattern[0], patternPos, buffer, off, len);
 
-		// just a little test...
-		// plays all the instruments ultra-fast :)
-		for (int i = off; i < off+len; i++) {
-			buffer[i] = (instrument[ins].sample[0].sampleData[pos] * 128 & 65535)|(instrument[ins].sample[0].sampleData[pos] * 128 << 16);
-
-			pos++;
-			if (pos >= instrument[ins].sample[0].sampleData.length) {
-				pos = 0;
-				ins++;
-				if (ins >= instrument.length) ins = 0;
-				while (instrument[ins].sample.length == 0) ins++;
-			}
-		}
 		return len;
 	}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.4  2000/09/03 17:47:22  quarn
+ * cleaned up
+ *
  * Revision 1.3  2000/07/21 09:43:10  quarn
  * extends AudioFormat
  *
