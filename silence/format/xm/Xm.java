@@ -1,5 +1,5 @@
-/* Xm.java - The general xm class
- * Copyright (C) 2000-2001 Fredrik Ehnbom
+/* $Id: Xm.java,v 1.10 2003/08/21 09:27:06 fredde Exp $
+ * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.9 2001/01/11 20:25:37 fredde Exp $
+ * @version $Revision: 1.10 $
  */
 public class Xm
 	extends AudioFormat
@@ -36,7 +36,8 @@ public class Xm
 
 	int defaultTempo = 0;
 	int defaultBpm = 0;
-	int tempo = 0;
+
+	int tick = 0;
 
 	int deviceSampleRate = 0;
 	int samplesPerTick;
@@ -194,7 +195,7 @@ public class Xm
 		}
 
 		for (int i = off; i < off+len; i += samplesPerTick) {
-			if (--tempo <= 0) {
+			if (++tick == defaultTempo) {
 				for (int j = 0; j < channel.length; j++)  {
 					patternPos = channel[j].update(pattern[playingPattern], patternPos);
 
@@ -229,7 +230,7 @@ public class Xm
 					}
 					playingPattern = patorder[playingPatternPos];
 				}
-				tempo = defaultTempo;
+				tick = 0;
 			}
 			int read = samplesPerTick;
 			if (read > off+len-i) {
@@ -261,6 +262,9 @@ public class Xm
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.10  2003/08/21 09:27:06  fredde
+ * tempo -> tick
+ *
  * Revision 1.9  2001/01/11 20:25:37  fredde
  * added custom toString
  *
