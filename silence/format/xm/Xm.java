@@ -1,5 +1,5 @@
 /* Xm.java - The general xm class
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2001 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.6 2000/12/21 17:21:42 fredde Exp $
+ * @version $Id: Xm.java,v 1.7 2001/01/04 18:56:42 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
@@ -190,7 +190,7 @@ public class Xm
 			len -= read;
 			restTick -= read;
 		}
-			
+
 		for (int i = off; i < off+len; i += samplesPerTick) {
 			if (--tempo <= 0) {
 				for (int j = 0; j < channel.length; j++)  {
@@ -248,10 +248,15 @@ public class Xm
 		super.setDevice(device);
 		samplesPerTick = (5 * deviceSampleRate) / (2 * defaultBpm);
 	}
+
+	public void close() {}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.7  2001/01/04 18:56:42  fredde
+ * added close method
+ *
  * Revision 1.6  2000/12/21 17:21:42  fredde
  * load(in) is public
  *
