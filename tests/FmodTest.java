@@ -26,7 +26,7 @@ import java.awt.event.*;
 /**
  * An example player for the FMOD device
  * @author Fredrik Ehnbom
- * @version $Id: FmodTest.java,v 1.3 2000/06/20 22:32:29 quarn Exp $
+ * @version $Id: FmodTest.java,v 1.4 2000/06/20 23:07:20 quarn Exp $
  */
 public class FmodTest extends Frame {
 
@@ -40,7 +40,7 @@ public class FmodTest extends Frame {
 		}
 	};
 
-        private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 128, 4, 0, 256);
+	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 128, 4, 0, 256);
 	private String file = null;
 
 	/**
@@ -48,7 +48,7 @@ public class FmodTest extends Frame {
 	 * @param file The file to play
 	 */
 	public FmodTest(String file) {
-                super("FMOD test: " + file);
+		super("FMOD test: " + file);
 		this.file = file;
 		setLayout(new BorderLayout());
 
@@ -106,13 +106,9 @@ public class FmodTest extends Frame {
 				}
 			} else if (event.equals("Stop")) {
 				audioDevice.stop();
-                        } else if (event.equals("Pause")) {
-                                try {
-                                        audioDevice.pause();
-                                } catch (AudioException fe) {
-                                        fe.printStackTrace();
-                                }
-                        }
+			} else if (event.equals("Pause")) {
+				audioDevice.pause();
+			}
 		}
 	};
 
@@ -127,6 +123,9 @@ public class FmodTest extends Frame {
 /*
  * ChangeLog:
  * $Log: FmodTest.java,v $
+ * Revision 1.4  2000/06/20 23:07:20  quarn
+ * no need to catch an exception when pausing
+ *
  * Revision 1.3  2000/06/20 22:32:29  quarn
  * no need to load the libs
  *
