@@ -20,83 +20,128 @@ package silence;
 
 import java.util.*;
 
-import silence.devices.*;
+import org.komplex.audio.*;
+
+import silence.format.AudioFormat;
 
 /**
  * The basic class for silence.
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.4 2000/06/25 18:42:09 quarn Exp $
+ * @version $Id: Silence.java,v 1.5 2000/08/25 17:36:26 quarn Exp $
  */
-public class Silence {
+public class Silence implements AudioConstants {
 
-	private Vector devices = new Vector();
-	private Hashtable nativelibs = new Hashtable();
-
-	public static final String BassDevice  = "silence.devices.bass.BassDevice";
-	public static final String FmodDevice  = "silence.devices.fmod.FmodDevice";
-	public static final String MidasDevice = "silence.devices.midas.MidasDevice";
-	public static final String MuhmuDevice = "silence.devices.MuhmuDevice";
+	private AudioOutDevice	device = null;
+	private AudioFormat	format = null;
 
 	public Silence() {
-		addDevice(BassDevice,  "bsilence");
-		addDevice(FmodDevice,  "fsilence");
-		addDevice(MidasDevice, "msilence");
-		addDevice(MuhmuDevice, "");
 	}
 
 	/**
-	 * Add a device to the devicelist
-	 * @param device The device to add
-	 * @param library The name of the native library if one should be loaded.
-	 * just use "" if the device has no native library.
+	 * Tries to load and init an audiodevice.
+	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
+	 * @param sound Wheter we want sound output or not (sound or nosound mode)
 	 */
-	public void addDevice(String device, String library) {
-		devices.addElement(device);
-		nativelibs.put(device, library);
-	}
+	public void init(int soundFormat, boolean sound) throws AudioException {
+		AudioOutDeviceFactory factory = new AudioOutDeviceFactory();
 
-	/**
-	 * Load the specified device
-	 * @param device The device to load
-	 * @return The AudioDevice if it could be loaded or null if it could not
-	 */
-	public AudioDevice loadDevice(String device) throws AudioException {
-		System.out.println(device);
-		try {
-			String library = nativelibs.get(device).toString();
-			if (!library.equals("")) System.loadLibrary(library);
-
-			Class c = Class.forName(device);
-			return (AudioDevice) c.newInstance();
-		} catch (Throwable t) {
-			throw new AudioException("failed to load device \"" + device + "\": " + t.toString());
+		if (sound == false) {
+			String[] args = {"-nosound"};
+			factory.initArgs(args);
 		}
-	}
 
-	/**
-	 * Tries to load a device from the device list
-	 * until one could be loaded
-	 * @return The first AudioDevice that could be loaded
-	 */
-	public AudioDevice getAudioDevice() {
-		AudioDevice audio = null;
-		Enumeration e = devices.elements();
-
-		while (e.hasMoreElements()) {
+		while (device == null) {
 			try {
-				audio = loadDevice(e.nextElement().toString());
-				if (audio != null) return audio;
-			} catch (AudioException ae) {
-				System.err.println(ae);
+				device = factory.getAudioOutDevice();
+
+				if (device == null) {
+					break;
+				}
+
+				// direcsound requires a component reference
+				Hashtable hash = new Hashtable();
+				hash.put(AudioConstants.PROP_COMPONENT, this);
+				device.setProperties(hash);
+
+				device.init(soundFormat);
+
+				break;
+			} catch (Throwable t) {
+				factory.disableDevice(device);
+				device = null;
 			}
 		}
 
-		return audio;
+		if (device == null) {
+			throw new AudioException("Could not find a device to use...");
+		}
+	}
+
+	/**
+	 * Loads the AudioFormat for the specified file.
+	 * @param file The file to load
+	 */
+	public AudioFormat load(String file) throws AudioException {
+		if (file.indexOf(".") == -1) throw new AudioException("Does not know how to play " + file);
+
+		String end = file.substring(file.lastIndexOf("."), file.length());
+
+		// get the AudioFormat for this file
+		AudioFormat format = AudioFormat.getFormat(end);
+
+		if (format == null) throw new AudioException("Does not know how to play " + file);
+
+		try {
+			format.load(file);
+		} catch (Exception e) {
+			throw new AudioException(e.toString());
+		}
+
+		return format;
+	}
+
+	/**
+	 * Plays (or loops) the specified AudioFormat.
+	 * @param format The AudioFormat to play
+	 * @param loop Wheter we want to loop or not
+	 */
+	public void play(AudioFormat format, boolean loop) throws AudioException {
+		if (device == null) throw new AudioException("You must create a device first!");
+
+		this.format = format;
+		format.setSampleRate(device.getSampleRate());
+		device.setPullSource(format);
+
+		try {
+			device.start();
+		} catch (org.komplex.audio.AudioException e) {
+			throw new AudioException(e.toString());
+		}
+	}
+
+	/**
+	 * Stops playing
+	 */
+	public void stop() {
+		device.stop();
+	}
+
+	/**
+	 * Set the volume for the audio output
+	 * @param volume The new volume ranging from 0-100
+	 */
+	public void setVolume(int volume) {
+		volume = (volume > 100) ? 100 : (volume < 0) ? 0 : volume;
+
+		format.setVolume((double) volume / 100);
 	}
 }
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.5  2000/08/25 17:36:26  quarn
+ * is now like the new version of devices/MuhmuDevice.java
+ *
  * Revision 1.4  2000/06/25 18:42:09  quarn
  * loadDevice now throws an exception if the device could not be loaded
  *
