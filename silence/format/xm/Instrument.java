@@ -23,12 +23,12 @@ import java.io.*;
  * This class stores information about an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.2 2000/10/07 13:49:08 fredde Exp $
+ * @version $Id: Instrument.java,v 1.3 2000/10/12 15:07:17 fredde Exp $
  */
 class Instrument {
 
 	Sample[]	sample;
-	int[]		volumeEnvelopePoints; // = new byte[48];
+	int[]		volumeEnvelopePoints;
 	int		fadeoutVolume;
 	int		volType;
 	int		volSustain;
@@ -50,7 +50,6 @@ class Instrument {
 
 		// Instrument name
 		b = Xm.read(in, 22);
-		System.out.println("Name: " + new String(b));
 
 		// Instrument type (always 0)
 		// Note: not always 0 but it says so in the documents...
@@ -88,7 +87,6 @@ class Instrument {
 			// Number of volume points
 			int points = in.read();
 			volumeEnvelopePoints = new int[points * 2];
-			System.out.println("envpoints: " + points);
 
 			int pos = 0;
 			for (int i = 0; i < points * 2; i++) {
@@ -105,7 +103,6 @@ class Instrument {
 
 			// Volume sustain point
 			volSustain = in.read();
-			System.out.println("sustain: " + volSustain);
 
 			// Volume loop start point
 			volLoopStart = in.read();
@@ -124,7 +121,6 @@ class Instrument {
 
 			// Volume type: bit 0: on; 1: Sustain; 2: Loop
 			volType = in.read();
-			System.out.println("volType: " + (((volType & 0x2) != 0) ? "sustain" : ((volType & 0x4) != 0) ? "loop" : "on"));
 
 			// Panning type: bit 0: on; 1: Sustain; 2: Loop
 			in.read();
@@ -163,6 +159,9 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
+ * Revision 1.3  2000/10/12 15:07:17  fredde
+ * removed log messages
+ *
  * Revision 1.2  2000/10/07 13:49:08  fredde
  * fixed to read the data correctly
  *
