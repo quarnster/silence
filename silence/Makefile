@@ -1,9 +1,9 @@
 #
-# $Id: Makefile,v 1.7 2001/01/27 18:15:00 fredde Exp $
+# $Id: Makefile,v 1.8 2003/08/21 09:19:59 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
-JAVAC = jikes
+JAVAC = javac
 JAVAFLAGS = -O -deprecation
 
 MuhmuAudioDir = ~/java/muhmuaudio/src
@@ -20,14 +20,13 @@ SILENCE = org/gjt/fredde/silence/AudioException.class \
 	org/gjt/fredde/silence/format/xm/Pattern.class \
 	org/gjt/fredde/silence/format/xm/Sample.class \
 	org/gjt/fredde/silence/format/xm/Instrument.class \
+	org/gjt/fredde/silence/format/xm/InstrumentManager.class \
 	org/gjt/fredde/silence/format/xm/Channel.class \
 	org/gjt/fredde/silence/format/xm/Xm.class \
 	\
 	org/gjt/fredde/silence/format/au/Au.class \
 	org/gjt/fredde/silence/format/au/Decoder.class \
-	org/gjt/fredde/silence/format/au/MulawDecoder.class \
-	\
-	org/gjt/fredde/silence/format/ogg/Ogg.class
+	org/gjt/fredde/silence/format/au/MulawDecoder.class
 
 all: $(SILENCE)
 
