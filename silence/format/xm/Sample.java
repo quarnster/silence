@@ -23,7 +23,7 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.4 2000/10/12 15:06:28 fredde Exp $
+ * @version $Id: Sample.java,v 1.5 2000/10/14 19:11:35 fredde Exp $
  */
 class Sample {
 	private int sampleLength = 0;
@@ -35,7 +35,7 @@ class Sample {
 
 	int relativeNote = 0;
 	int fineTune = 0;
-	int[] sampleData;
+	byte[] sampleData;
 	int	volume;
 
 
@@ -43,39 +43,20 @@ class Sample {
 		throws IOException
 	{
 		// Sample length
-		byte b[] = Xm.read(in, 4);
-
-		int t[] = new int[4];
-		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
-		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
-		sampleLength = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+		sampleLength = Xm.make32Bit(Xm.read(in, 4));
 
 		// Sample loop start
-		b = Xm.read(in, 4);
-		t = new int[4];
-		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
-		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
-		loopStart = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+		loopStart = Xm.make32Bit(Xm.read(in, 4));
 
 		// Sample loop length
-		b = Xm.read(in, 4);
-		t = new int[4];
-		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
-		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
-		loopEnd = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+		loopEnd = Xm.make32Bit(Xm.read(in, 4));
 
 		// Volume
 		volume = in.read();
 
 		// Finetune (signend byte -128...+127)
 		fineTune = in.read();
-		if (fineTune > 127) fineTune -= 256;
+		if (fineTune >= 127) fineTune -= 256;
 
 		// Type: Bit 0-1: 0 = No loop,
 		//                1 = Forward loop,
@@ -89,49 +70,41 @@ class Sample {
 
 		// Relative note number (signed byte)
 		relativeNote = in.read();
-		if (relativeNote > 95) relativeNote -= 256;
+		if (relativeNote >= 127) relativeNote -= 256;
 
 		// Reserved
 		in.read();
 
 		// Sample name
-		b = Xm.read(in, 22);
+		Xm.read(in, 22);
 	}
 
 	public void readData(BufferedInputStream in)
 		throws IOException
 	{
 		if (sampleQuality == 16) {
-			// TODO: fix...
 			sampleLength >>= 1;
 			loopEnd >>= 1;
 			loopStart >>= 1;
 
 			byte[] temp = Xm.read(in, 2 * sampleLength);
-			sampleData = new int[sampleLength];
+			sampleData = new byte[sampleLength];
 
 			int tmpPos = 0;
 
-			for (int i = 0; i < sampleData.length; i++) {
-				sampleData[i] = (temp[tmpPos++]); // < 0 ? temp[tmpPos] + 256 : temp[tmpPos]);
-				sampleData[i] += (temp[tmpPos++]) << 8;
-			}
-
 			int samp = 0;
 
-			for (int i = 0; i < sampleData.length; i++) {
-				samp += sampleData[i];
-				sampleData[i] = samp;
+			for (int i = 0; i < sampleData.length; i++, tmpPos += 2) {
+				samp += Xm.make16Bit(temp, tmpPos);
+				sampleData[i] = (byte) (samp >> 8);
 			}
 		} else {
-			byte[] temp = Xm.read(in, sampleLength);
-			sampleData = new int[sampleLength];
-
+			sampleData = Xm.read(in, sampleLength);
 			int samp = 0;
 
 			for (int i = 0; i < sampleData.length; i++) {
-				samp += temp[i];
-				sampleData[i] = (int) ((byte) samp) << 8;
+				samp += sampleData[i]&0xff;
+				sampleData[i] = (byte) samp;
 			}
 
 		}
@@ -140,6 +113,11 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.5  2000/10/14 19:11:35  fredde
+ * made sampleData to an byte array
+ * now uses Xm.make[16|32]Bit()
+ * 16-bit samples working!
+ *
  * Revision 1.4  2000/10/12 15:06:28  fredde
  * made sampleData to an int[], 16-bit samples works
  * better but still not good.
