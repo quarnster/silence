@@ -1,0 +1,43 @@
+CLASSPATH = ./
+JAVAC = jikes
+JAVAFLAGS = -O -deprecation
+
+.SUFFIXES: .class .java
+
+CLASSES = silence/AudioException.class \
+	silence/Silence.class \
+	silence/CallbackClass.class
+
+all: $(CLASSES) formats
+
+formats: silence/format/AudioFormat.class \
+	silence/format/xm/Pattern.class \
+	silence/format/xm/Sample.class \
+	silence/format/xm/Instrument.class \
+	silence/format/xm/Channel.class \
+	silence/format/xm/Xm.class \
+	silence/format/au/Au.class
+
+javadoc:
+	mkdir javadoc
+	javadoc -d javadoc silence silence.devices silence.format silence.format.xm silence.format.au
+
+dist: all jar javadoc
+
+.java.class:
+	$(JAVAC) $(JAVAFLAGS) $<
+
+clean:
+	rm -f silence/*.class
+	rm -f silence/format/*.class
+	rm -f silence/format/xm/*.class
+	rm -f silence/format/au/*.class
+	rm -f *.jar
+	rm -f -r javadoc
+
+jar:
+	jar cvf silence.jar \
+	silence/*.class \
+	silence/format/*.class \
+	silence/format/xm/*.class
+	silence/format/au/*.class
