@@ -27,14 +27,12 @@ import org.gjt.fredde.silence.format.*;
  * A simple example player for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: SimplePlayTest.java,v 1.1 2000/09/29 19:32:11 fredde Exp $
+ * @version $Id: SimplePlayTest.java,v 1.2 2000/09/30 09:15:22 fredde Exp $
  */
 public class SimplePlayTest
 	extends Frame
-	implements WindowListener, Runnable
+	implements WindowListener
 {
-
-	private String file;
 	private Silence silence = new Silence();
 
 	public static void main(String args[]) {
@@ -48,18 +46,10 @@ public class SimplePlayTest
 
 	public SimplePlayTest(String file) {
 		super("a simple test...");
-		this.file = file;
-
 		addWindowListener(this);
-
-		Thread t = new Thread(this);
-		t.start();
-
 		setSize(320, 240);
 		show();
-	}
 
-	public void run() {
 		try {
 			// initialize silence
 			silence.init();
@@ -73,8 +63,8 @@ public class SimplePlayTest
 			ae.printStackTrace();
 			System.exit(1);
 		}
-	}
 
+	}
 
 	public void windowClosing(WindowEvent e) {
 		silence.stop();
@@ -92,6 +82,9 @@ public class SimplePlayTest
 /*
  * ChangeLog:
  * $Log: SimplePlayTest.java,v $
+ * Revision 1.2  2000/09/30 09:15:22  fredde
+ * does not have to be a thread
+ *
  * Revision 1.1  2000/09/29 19:32:11  fredde
  * A simple play test
  *
