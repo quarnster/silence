@@ -29,7 +29,7 @@ import org.komplex.audio.*;
  * can find at http://www.wotsit.org
  *
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.6 2001/01/11 20:25:37 fredde Exp $
+ * @version $Id: Au.java,v 1.7 2003/08/22 07:00:53 fredde Exp $
  */
 public class Au
 	extends AudioFormat
@@ -150,7 +150,7 @@ public class Au
 
 	public void setDevice(AudioOutDevice device) {
 		super.setDevice(device);
-		pitch = device.getChannels() * ((double) this.samplerate / device.getSampleRate());
+		pitch = /*device.getChannels() **/ ((double) this.samplerate / device.getSampleRate());
 	}
 
 	public void close() {
@@ -168,6 +168,9 @@ public class Au
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.7  2003/08/22 07:00:53  fredde
+ * correct pitch handling
+ *
  * Revision 1.6  2001/01/11 20:25:37  fredde
  * added custom toString
  *
