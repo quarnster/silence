@@ -29,16 +29,38 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
+ * @version $Id: Silence.java,v 1.2 2000/09/29 19:36:56 fredde Exp $
  */
-public class Silence
+public class Silence 
 	implements AudioConstants
 {
 
-	private AudioOutDevice	device = null;
-	private AudioFormat	format = null;
+	private AudioOutDevice device = null;
 
 	public Silence() {
+	}
+
+	/**
+	 * Tries to load and init an audiodevice.
+	 *
+	 * @exception AudioException If a device could not be found
+	 */
+	public void init()
+		throws AudioException
+	{
+		init(FORMAT_PCM44K16S, true, null);
+	}
+
+	/**
+	 * Tries to load and init an audiodevice.
+	 *
+	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
+	 * @exception AudioException If a device could not be found
+	 */
+	public void init(int soundFormat)
+		throws AudioException
+	{
+		init(soundFormat, true, null);
 	}
 
 	/**
@@ -80,7 +102,7 @@ public class Silence
 					break;
 				}
 
-				// direcsound requires a component reference
+				// directsound requires a component reference
 				if (comp != null) {
 					Hashtable hash = new Hashtable();
 					hash.put(AudioConstants.PROP_COMPONENT, comp);
@@ -102,7 +124,14 @@ public class Silence
 	}
 
 	/**
-	 * Loads the AudioFormat for the specified file.
+	 * Loads an AudioFormat for the specified file.
+	 * This can also be an URL in textformat:<br><br>
+	 * <code>load("http://httpsomewhere/afile")</code>,<br>
+	 * <code>load("ftp://ftpsomewhere/afile")</code>,<br>
+	 * etc...<br><br>
+	 *
+	 * All URLs supported by the java implementation
+	 * is also supported by silence.
 	 *
 	 * @param file The file to load
 	 * @exception AudioException If a file of unknown type is specified
@@ -129,6 +158,17 @@ public class Silence
 	}
 
 	/**
+	 * Plays the specified AudioFormat.
+	 *
+	 * @param format The AudioFormat to play
+	 */
+	public void play(AudioFormat format)
+		throws AudioException
+	{
+		play(format, false);
+	}
+
+	/**
 	 * Plays (or loops) the specified AudioFormat.
 	 *
 	 * @param format The AudioFormat to play
@@ -139,7 +179,6 @@ public class Silence
 	{
 		if (device == null) throw new AudioException("You must create a device first!");
 
-		this.format = format;
 		format.setDevice(device);
 		device.setPullSource(format);
 
@@ -156,22 +195,15 @@ public class Silence
 	public void stop() {
 		device.stop();
 	}
-
-	/**
-	 * Set the volume for the audio output
-	 *
-	 * @param volume The new volume ranging from 0-100
-	 */
-	public void setVolume(int volume) {
-		volume = (volume > 100) ? 100 : (volume < 0) ? 0 : volume;
-
-		format.setVolume((double) volume / 100);
-	}
 }
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
- * Revision 1.1  2000/09/25 16:34:34  fredde
- * Initial revision
+ * Revision 1.2  2000/09/29 19:36:56  fredde
+ * removed unused stuff, added javadoc comments
+ * and some new functions
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
+ * initial commit
  *
  */
