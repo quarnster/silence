@@ -23,7 +23,7 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.5 2000/10/14 19:11:35 fredde Exp $
+ * @version $Id: Sample.java,v 1.6 2000/12/21 17:21:14 fredde Exp $
  */
 class Sample {
 	private int sampleLength = 0;
@@ -33,8 +33,8 @@ class Sample {
 	int loopStart = 0;
 	int loopEnd = 0;
 
-	int relativeNote = 0;
-	int fineTune = 0;
+	byte relativeNote = 0;
+	byte fineTune = 0;
 	byte[] sampleData;
 	int	volume;
 
@@ -55,8 +55,7 @@ class Sample {
 		volume = in.read();
 
 		// Finetune (signend byte -128...+127)
-		fineTune = in.read();
-		if (fineTune >= 127) fineTune -= 256;
+		fineTune = (byte) in.read();
 
 		// Type: Bit 0-1: 0 = No loop,
 		//                1 = Forward loop,
@@ -69,8 +68,7 @@ class Sample {
 		in.read();
 
 		// Relative note number (signed byte)
-		relativeNote = in.read();
-		if (relativeNote >= 127) relativeNote -= 256;
+		relativeNote = (byte) in.read();
 
 		// Reserved
 		in.read();
@@ -113,6 +111,9 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.6  2000/12/21 17:21:14  fredde
+ * relativeNote, fineTune -> byte
+ *
  * Revision 1.5  2000/10/14 19:11:35  fredde
  * made sampleData to an byte array
  * now uses Xm.make[16|32]Bit()
