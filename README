@@ -4,8 +4,8 @@ silence
 silence is an effort to create a xm/mod/mp3 player to be
 used in games and demos/intros.
 
-Currently it is only a layer between Java and Fmod or Midas,
-but one goal of silence is to create a 100% pure Java player.
+Currently it is only a layer between Java and FMOD, Bass or Midas,
+but the work to create a 100% pure Java player has begun.
 
 Please note, just because silence is licensed under the GNU LGPL
 does not mean that FMOD, Midas, BASS and MuhmuAudio are (ok, MuhmuAudio

@@ -1,5 +1,5 @@
 
 - write 100% JavaSound compatible xm and mp3 player
-- port that player to java 1.1 (No JavaSound)
+- add commands that are specific to a device
 - fix bugs
 - 
