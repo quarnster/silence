@@ -17,18 +17,20 @@
  */
 package org.gjt.fredde.silence.format.xm;
 
+import java.awt.Point;
 import java.io.*;
 
 /**
  * This class stores information about an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.4 2000/10/14 19:10:05 fredde Exp $
+ * @version $Id: Instrument.java,v 1.5 2000/12/21 17:20:37 fredde Exp $
  */
 class Instrument {
-
 	Sample[]	sample;
-	int[]		volumeEnvelopePoints;
+	Point[]	volumeEnvelopePoints;
+	Point2Df[]	volumeEnvInfo;
+
 	int		fadeoutVolume;
 	int		volType;
 	int		volSustain;
@@ -73,11 +75,33 @@ class Instrument {
 
 			// Number of volume points
 			int points = in.read();
-			volumeEnvelopePoints = new int[points * 2];
+			volumeEnvelopePoints = new Point[points]; //new int[points * 2];
+			volumeEnvInfo = new Point2Df[points];
 
 			int pos = 0;
-			for (int i = 0; i < points * 2; i++, pos += 2) {
-				volumeEnvelopePoints[i] = Xm.make16Bit(tmp, pos);
+			for (int i = 0; i < points; i++, pos += 2) {
+				volumeEnvelopePoints[i] = new Point();
+
+				volumeEnvelopePoints[i].x = Xm.make16Bit(tmp, pos);
+				pos += 2;
+				volumeEnvelopePoints[i].y = Xm.make16Bit(tmp, pos);
+			}
+
+			for (int i = 0; i < points-1; i ++) {
+				volumeEnvInfo[i] = new Point2Df();
+				volumeEnvInfo[i].y = (float) (
+					volumeEnvelopePoints[i + 0].y -
+					volumeEnvelopePoints[i + 1].y
+				) /
+				(float) (
+					volumeEnvelopePoints[i + 0].x -
+					volumeEnvelopePoints[i + 1].x
+				);
+
+				volumeEnvInfo[i].x = (
+						volumeEnvelopePoints[i + 1].x -
+		 				volumeEnvelopePoints[i + 0].x
+					);
 			}
 
 			// Number of panning points 
@@ -137,6 +161,9 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
+ * Revision 1.5  2000/12/21 17:20:37  fredde
+ * precalc k-values for volume envelopes
+ *
  * Revision 1.4  2000/10/14 19:10:05  fredde
  * now uses Xm.make[16|32]Bit()
  *
