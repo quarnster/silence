@@ -15,20 +15,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package silence.format;
+package org.gjt.fredde.silence.format;
 
 import java.io.*;
 import java.net.URL;
 import java.util.Hashtable;
 
-import org.komplex .audio.PullAudioSource;
+import org.komplex.audio.*;
 
 /**
  * The basic class for AudioFormats
+ *
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.4 2000/09/03 17:40:18 quarn Exp $
+ * @version $Id: AudioFormat.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
  */
-public abstract class AudioFormat implements PullAudioSource {
+public abstract class AudioFormat
+	implements PullAudioSource
+{
 
 	/** List of formats */
 	private static Hashtable flist = new Hashtable();
@@ -44,14 +47,16 @@ public abstract class AudioFormat implements PullAudioSource {
 
 	static {
 		// put all supported formats to the format list
-		flist.put(".xm", "silence.format.xm.Xm");
-		flist.put(".au", "silence.format.au.Au");
+		flist.put(".xm", "org.gjt.fredde.silence.format.xm.Xm");
+		flist.put(".au", "org.gjt.fredde.silence.format.au.Au");
 	}
 
 	/**
 	 * Load the file
 	 */
-	public void load(String file) throws Exception {
+	public void load(String file)
+		throws Exception
+	{
 		if (file.indexOf(":") > 1) {
 			URL u = new URL(file);
 			load(new BufferedInputStream(u.openStream()));
@@ -67,6 +72,7 @@ public abstract class AudioFormat implements PullAudioSource {
 
 	/**
 	 * Gets the AudioFormat for the specified format
+	 *
 	 * @param format The format we wish to get the AudioFormat for
 	 */
 	public static AudioFormat getFormat(String format) {
@@ -88,42 +94,28 @@ public abstract class AudioFormat implements PullAudioSource {
 	}
 
 	/**
-	 * Set the samplerate for the device used
-	 * @param rate The samplerate
-	 */
-	public void setSampleRate(int rate) {
-		deviceSampleRate = rate;
-		System.out.println("rate: " + rate);
-	}
-
-	/**
-	 * Wheter we will acctually play sounds or not
-	 */
-	public void setPlayLoud(boolean loud) {
-		playLoud = loud;
-	}
-
-	/**
 	 * Sets the volume
+	 *
 	 * @param volume The new volume
 	 */
 	public void setVolume(double volume) {
 		this.volume = volume;
 	}
+
+	/**
+	 * Sets the device used for playing this AudioFormat
+	 *
+	 * @param device The device to use
+	 */
+	public void setDevice(AudioOutDevice device) {
+		playLoud = !(device instanceof org.komplex.audio.device.NoSoundDevice);
+		deviceSampleRate = device.getSampleRate();
+	}
 }
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
- * Revision 1.4  2000/09/03 17:40:18  quarn
- * added playLoud stuff
- *
- * Revision 1.3  2000/08/25 17:37:33  quarn
- * added volume stuff
- *
- * Revision 1.2  2000/08/20 17:57:01  quarn
- * added .au format, samplerate stuff
- *
- * Revision 1.1  2000/07/21 09:37:34  quarn
- * the basic AudioFormat class
+ * Revision 1.1  2000/09/25 16:34:34  fredde
+ * Initial revision
  *
  */

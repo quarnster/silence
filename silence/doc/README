@@ -1,12 +1,12 @@
 silence
 ----------------
 
-silence is an effort to create a 100% pure xm/mod/mp3 player to be
+silence is an effort to create a 100% pure xm//mp3/etc player to be
 used in games and demos/intros.
 
 silence uses the excellent MuhmuAudio drivers for audioplaying.
 
-silence homepage:	http://silence.sourceforge.net
+silence homepage:	http://www.gjt.org/~fredde/silence/
 MuhmuAudio homepage:	http://muhmuaudio.sourceforge.net
 
 silence is Copyright (c) 2000 Fredrik Ehnbom

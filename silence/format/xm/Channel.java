@@ -15,16 +15,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package silence.format.xm;
+package org.gjt.fredde.silence.format.xm;
 
 /**
  * A class that stores channel data
  *
- * @version $Id: Channel.java,v 1.1 2000/09/03 17:42:56 quarn Exp $
+ * @version $Id: Channel.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
  * @author Fredrik Ehnbom
  */
 public class Channel {
-
 	private Xm xm;
 
 	public Channel(Xm xm) {
@@ -73,7 +72,7 @@ public class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
- * Revision 1.1  2000/09/03 17:42:56  quarn
- * Channel handler
+ * Revision 1.1  2000/09/25 16:34:34  fredde
+ * Initial revision
  *
  */

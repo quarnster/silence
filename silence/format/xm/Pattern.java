@@ -15,21 +15,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package silence.format.xm;
+package org.gjt.fredde.silence.format.xm;
 
 import java.io.*;
 
 /**
  * Stores pattern data
+ *
  * @author Fredrik Ehnbom
- * @version $Id: Pattern.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
+ * @version $Id: Pattern.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
  */
 class Pattern {
-
 	private int channels = 0;
 	private int nrows = 0;
+	protected byte[] data;
 
-	public Pattern(int channels, BufferedInputStream in) throws IOException {
+	public Pattern(int channels, BufferedInputStream in)
+		throws IOException
+	{
 		this.channels = channels;
 
 		// Pattern header length
@@ -49,9 +52,15 @@ class Pattern {
 		in.read(b);
 		int size = (int) ((b[0] < 0) ? 256 + b[0] : b[0]);
 
+		data = new byte[size];
 		if (size == 0) {
 			return;
 		}
+
+//		int read = in.read(data);
+//		while (read != data.length) {
+//			read += in.read(data, read, data.length - read);
+//		}
 
 		// print the not info in colums like ft2 does.
 /*
@@ -90,6 +99,7 @@ class Pattern {
 
 	/**
 	 * Checks if the bit "bit" is set in byte "b"
+	 *
 	 * @param b The byte
 	 * @param bit The bit to check
 	 */
@@ -102,9 +112,10 @@ class Pattern {
 		return ( (( b & mask) != 0) ? true : false);
 	}
 
-	private void readNote(BufferedInputStream in) throws IOException {
+	private void readNote(BufferedInputStream in)
+		throws IOException
+	{
 		int i = in.read();
-
 
 		if (isSet(i, 7)) {
 			// note follows
@@ -139,7 +150,9 @@ class Pattern {
 		}
 	}
 
-	private void printNote(BufferedInputStream in) throws IOException {
+	private void printNote(BufferedInputStream in)
+		throws IOException
+	{
 		int b  = in.read();
 
 		if (isSet(b, 7)) {
@@ -215,7 +228,7 @@ class Pattern {
 		}
 	}
 
-	final String notes[] = {
+	public static final String notes[] = {
 		"???",
 		"C-0", "C#0", "D-0", "D#0", "E-0", "F-0", "F#0", "G-0", "G#0", "A-0", "A#0", "B-0",
 		"C-1", "C#1", "D-1", "D#1", "E-1", "F-1", "F#1", "G-1", "G#1", "A-1", "A#1", "B-1",
@@ -239,10 +252,7 @@ class Pattern {
 /*
  * ChangeLog:
  * $Log: Pattern.java,v $
- * Revision 1.2  2000/06/08 16:29:30  quarn
- * fixed/updated/etc...
- *
- * Revision 1.1  2000/06/07 13:28:15  quarn
- * files for the xm sound format
+ * Revision 1.1  2000/09/25 16:34:33  fredde
+ * Initial revision
  *
  */

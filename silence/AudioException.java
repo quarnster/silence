@@ -16,14 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package silence;
+package org.gjt.fredde.silence;
 
 /**
  * AudioException
+ *
  * @author Fredrik Ehnbom
- * @version $Id: AudioException.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
+ * @version $Id: AudioException.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
  */
-public class AudioException extends Exception {
+public class AudioException
+	extends Exception
+{
 
 	/**
 	 * Creates a new AudioException
@@ -35,11 +38,7 @@ public class AudioException extends Exception {
 /*
  * ChangeLog:
  * $Log: AudioException.java,v $
- * Revision 1.2  2000/04/29 10:33:52  quarn
- * drats! Wrote  instead of ...
- *
- * Revision 1.1.1.1  2000/04/29 10:21:19  quarn
- * initial import
- *
+ * Revision 1.1  2000/09/25 16:34:33  fredde
+ * Initial revision
  *
  */

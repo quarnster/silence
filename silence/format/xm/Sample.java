@@ -15,17 +15,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package silence.format.xm;
+package org.gjt.fredde.silence.format.xm;
 
 import java.io.*;
 
 /**
  * Stores sample data
+ *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.4 2000/09/03 17:46:17 quarn Exp $
+ * @version $Id: Sample.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
  */
 class Sample {
-
 	private int samplelength = 0;
 	private int looptype = 0;
 	private int samplequality = 0;
@@ -34,7 +34,9 @@ class Sample {
 	protected byte[] sampleData;
 
 
-	public Sample(BufferedInputStream in) throws IOException {
+	public Sample(BufferedInputStream in)
+		throws IOException
+	{
 		// Sample length
 		byte b[] = new byte[4];
 		in.read(b);
@@ -82,7 +84,9 @@ class Sample {
 		in.read(b);
 	}
 
-	public void readData(BufferedInputStream in) throws IOException {
+	public void readData(BufferedInputStream in)
+		throws IOException
+	{
 		if (samplequality == 16) {
 			samplelength >>= 1;
 			sampleData = new byte[2 * samplelength];
@@ -109,10 +113,7 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
- * Revision 1.4  2000/09/03 17:46:17  quarn
- * made some fields protected
- *
- * Revision 1.3  2000/06/11 20:43:35  quarn
- * samples should now be loaded correctly in all jvm's
+ * Revision 1.1  2000/09/25 16:34:33  fredde
+ * Initial revision
  *
  */

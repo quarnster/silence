@@ -15,21 +15,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package silence.format.xm;
+package org.gjt.fredde.silence.format.xm;
 
 import java.io.*;
 
 /**
  * This class stores information about an instrument
+ *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
+ * @version $Id: Instrument.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
  */
 class Instrument {
 
 	protected Sample sample[];
 
-	public Instrument(BufferedInputStream in) throws IOException {
-
+	public Instrument(BufferedInputStream in)
+		throws IOException
+	{
 		// Instrument size
 		byte b[] = new byte[4];
 		in.read(b);
@@ -133,10 +135,7 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
- * Revision 1.2  2000/06/08 16:29:30  quarn
- * fixed/updated/etc...
- *
- * Revision 1.1  2000/06/07 13:28:15  quarn
- * files for the xm sound format
+ * Revision 1.1  2000/09/25 16:34:34  fredde
+ * Initial revision
  *
  */

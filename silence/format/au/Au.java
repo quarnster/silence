@@ -15,11 +15,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package silence.format.au;
+package org.gjt.fredde.silence.format.au;
 
 import java.io.*;
 
-import silence.format.*;
+import org.gjt.fredde.silence.format.*;
+
+import org.komplex.audio.*;
 
 /**
  * A class for loading and playing .au-files.
@@ -27,9 +29,11 @@ import silence.format.*;
  * can find at http://www.wotsit.org
  * 
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.3 2000/09/03 17:41:39 quarn Exp $
+ * @version $Id: Au.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
  */
-public class Au extends AudioFormat {
+public class Au
+	extends AudioFormat
+{
 
 	private int samplerate = 0;
 	private int[] sampledata;
@@ -43,7 +47,9 @@ public class Au extends AudioFormat {
 	 * Load the file into memory
 	 * @param in The InputStream to read the file from
 	 */
-	protected void load(BufferedInputStream in) throws IOException {
+	protected void load(BufferedInputStream in)
+		throws IOException
+	{
 		// magic number	the value 0x2e736e64 (ASCII ".snd")
 		System.out.println("0x2e: " + ((in.read() == 0x2e) ? "yes" : "no"));
 		System.out.println("0x73: " + ((in.read() == 0x73) ? "yes" : "no"));
@@ -129,24 +135,15 @@ public class Au extends AudioFormat {
 		return len;
 	}
 
-	/**
-	 * recalc pitch
-	 */
-	public void setSampleRate(int samplerate) {
-		deviceSampleRate = samplerate;
+	public void setDevice(AudioOutDevice device) {
+		super.setDevice(device);
 		pitch = 1 / ((double) deviceSampleRate / this.samplerate);
 	}
 }
 /*
  * ChangeLog:
  * $Log: Au.java,v $
- * Revision 1.3  2000/09/03 17:41:39  quarn
- * do not play sound if using NoSoundDevice
- *
- * Revision 1.2  2000/08/25 17:38:44  quarn
- * updated
- *
- * Revision 1.1  2000/08/20 17:59:32  quarn
- * for .au playing
+ * Revision 1.1  2000/09/25 16:34:34  fredde
+ * Initial revision
  *
  */

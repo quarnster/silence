@@ -16,21 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package silence;
+package org.gjt.fredde.silence;
 
 import java.awt.Component;
 import java.util.*;
 
 import org.komplex.audio.*;
 
-import silence.format.AudioFormat;
+import org.gjt.fredde.silence.format.AudioFormat;
 
 /**
  * The basic class for silence.
+ *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.7 2000/09/03 17:36:34 quarn Exp $
+ * @version $Id: Silence.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
  */
-public class Silence implements AudioConstants {
+public class Silence
+	implements AudioConstants
+{
 
 	private AudioOutDevice	device = null;
 	private AudioFormat	format = null;
@@ -40,20 +43,28 @@ public class Silence implements AudioConstants {
 
 	/**
 	 * Tries to load and init an audiodevice.
+	 *
 	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
 	 * @param sound Wheter we want sound output or not (sound or nosound mode)
+	 * @exception AudioException If a device could not be found
 	 */
-	public void init(int soundFormat, boolean sound) throws AudioException {
+	public void init(int soundFormat, boolean sound)
+		throws AudioException
+	{
 		init(soundFormat, sound, null);
 	}
 
 	/**
 	 * Tries to load and init an audiodevice.
+	 *
 	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
-	 * @param sound Wheter we want sound output or not (sound or nosound mode)
+	 * @param sound	Wheter we want sound output or not (sound or nosound mode)
 	 * @param comp Directsound requires a component reference
+	 * @exception AudioException If a device could not be found
 	 */
-	public void init(int soundFormat, boolean sound, Component comp) throws AudioException {
+	public void init(int soundFormat, boolean sound, Component comp)
+		throws AudioException
+	{
 		AudioOutDeviceFactory factory = new AudioOutDeviceFactory();
 
 		if (sound == false) {
@@ -92,9 +103,13 @@ public class Silence implements AudioConstants {
 
 	/**
 	 * Loads the AudioFormat for the specified file.
+	 *
 	 * @param file The file to load
+	 * @exception AudioException If a file of unknown type is specified
 	 */
-	public AudioFormat load(String file) throws AudioException {
+	public AudioFormat load(String file)
+		throws AudioException
+	{
 		if (file.indexOf(".") == -1) throw new AudioException("Does not know how to play " + file);
 
 		String end = file.substring(file.lastIndexOf("."), file.length());
@@ -115,15 +130,17 @@ public class Silence implements AudioConstants {
 
 	/**
 	 * Plays (or loops) the specified AudioFormat.
+	 *
 	 * @param format The AudioFormat to play
 	 * @param loop Wheter we want to loop or not
 	 */
-	public void play(AudioFormat format, boolean loop) throws AudioException {
+	public void play(AudioFormat format, boolean loop)
+		throws AudioException
+	{
 		if (device == null) throw new AudioException("You must create a device first!");
 
 		this.format = format;
-		format.setPlayLoud(!(device instanceof org.komplex.audio.device.NoSoundDevice));
-		format.setSampleRate(device.getSampleRate());
+		format.setDevice(device);
 		device.setPullSource(format);
 
 		try {
@@ -142,6 +159,7 @@ public class Silence implements AudioConstants {
 
 	/**
 	 * Set the volume for the audio output
+	 *
 	 * @param volume The new volume ranging from 0-100
 	 */
 	public void setVolume(int volume) {
@@ -153,21 +171,7 @@ public class Silence implements AudioConstants {
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
- * Revision 1.7  2000/09/03 17:36:34  quarn
- * added init(int, boolean) method, NoSoundDevice checking
+ * Revision 1.1  2000/09/25 16:34:34  fredde
+ * Initial revision
  *
- * Revision 1.6  2000/08/27 12:39:46  quarn
- * Directsound requires a component reference
- *
- * Revision 1.5  2000/08/25 17:36:26  quarn
- * is now like the new version of devices/MuhmuDevice.java
- *
- * Revision 1.4  2000/06/25 18:42:09  quarn
- * loadDevice now throws an exception if the device could not be loaded
- *
- * Revision 1.3  2000/06/25 15:57:10  quarn
- * now does something usefull
- *
- * Revision 1.1.1.1  2000/04/29 10:21:19  quarn
- * initial import
  */
