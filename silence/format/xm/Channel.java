@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.13 2003/08/22 12:36:16 fredde Exp $
+ * @version $Id: Channel.java,v 1.14 2003/08/23 07:41:19 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -101,14 +101,13 @@ class Channel {
 		em.currentEffect = -1;
 
 		if (newEffect != -1) {
-			em.setEffect(newEffect, newEffectParam);
+			newNote = em.setEffect(newEffect, newEffectParam, newNote);
 		}
 
 		if (newNote != -1) {
 			if (newNote == 97) {
 				im.release();
 			} else {
-//				porta = 0;
 				currentNote = newNote;
 				im.playNote(currentNote);
 			}
@@ -134,6 +133,9 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.14  2003/08/23 07:41:19  fredde
+ * gets new note from effectmanager
+ *
  * Revision 1.13  2003/08/22 12:36:16  fredde
  * moved effects from Channel to EffectManager
  *
