@@ -23,7 +23,7 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
+ * @version $Id: Sample.java,v 1.2 2000/10/01 17:08:50 fredde Exp $
  */
 class Sample {
 	private int samplelength = 0;
@@ -67,14 +67,13 @@ class Sample {
 		//		  2 = Ping-pong loop;
 		//                4: 16-bit sampledata
 		looptype = in.read();
-		samplequality = Pattern.isSet((int) looptype, 4) ? 16 : 8;
+		samplequality = ((int) looptype & 0x10) != 0 ? 16 : 8;
 
 		// Panning (0-255)
 		in.read();
 
 		// Relative note number (signed byte)
 		relativenote = in.read();
-		if (relativenote <= 0) relativenote = 1;
 
 		// Reserved
 		in.read();
@@ -113,7 +112,10 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
- * Revision 1.1  2000/09/25 16:34:33  fredde
- * Initial revision
+ * Revision 1.2  2000/10/01 17:08:50  fredde
+ * no longer uses Pattern.isSet()
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:33  fredde
+ * initial commit
  *
  */
