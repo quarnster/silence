@@ -23,7 +23,7 @@ import silence.AudioException;
 /**
  * MidasException
  * @author Fredrik Ehnbom
- * @version $Ld$
+ * @version $Id: MidasException.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
  */
 public class MidasException extends AudioException {
 
@@ -34,7 +34,11 @@ public class MidasException extends AudioException {
 /*
  * ChangeLog:
  * $Log: MidasException.java,v $
- * Revision 1.1  2000/04/29 10:21:20  quarn
- * Initial revision
+ * Revision 1.2  2000/04/29 10:33:52  quarn
+ * drats! Wrote  instead of ...
+ *
+ * Revision 1.1.1.1  2000/04/29 10:21:20  quarn
+ * initial import
+ *
  *
  */

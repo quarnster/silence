@@ -21,7 +21,7 @@ package silence;
 /**
  * AudioException
  * @author Fredrik Ehnbom
- * @version $Ld$
+ * @version $Id: AudioException.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
  */
 public class AudioException extends Exception {
 
@@ -35,7 +35,11 @@ public class AudioException extends Exception {
 /*
  * ChangeLog:
  * $Log: AudioException.java,v $
- * Revision 1.1  2000/04/29 10:21:19  quarn
- * Initial revision
+ * Revision 1.2  2000/04/29 10:33:52  quarn
+ * drats! Wrote  instead of ...
+ *
+ * Revision 1.1.1.1  2000/04/29 10:21:19  quarn
+ * initial import
+ *
  *
  */

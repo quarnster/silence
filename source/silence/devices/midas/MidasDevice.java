@@ -23,7 +23,7 @@ import silence.devices.AudioDevice;
 /**
  * An audio device which uses midas
  * @author Fredrik Ehnbom
- * @version $Ld$
+ * @version $Id: MidasDevice.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
  */
 public class MidasDevice implements AudioDevice, Runnable {
 
@@ -119,7 +119,11 @@ public class MidasDevice implements AudioDevice, Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
- * Revision 1.1  2000/04/29 10:21:20  quarn
- * Initial revision
+ * Revision 1.2  2000/04/29 10:33:52  quarn
+ * drats! Wrote  instead of ...
+ *
+ * Revision 1.1.1.1  2000/04/29 10:21:20  quarn
+ * initial import
+ *
  *
  */

@@ -23,7 +23,7 @@ import silence.AudioException;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Ld$
+ * @version $Id: AudioDevice.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
  */
 public interface AudioDevice {
 
@@ -60,7 +60,11 @@ public interface AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
- * Revision 1.1  2000/04/29 10:21:19  quarn
- * Initial revision
+ * Revision 1.2  2000/04/29 10:33:52  quarn
+ * drats! Wrote  instead of ...
+ *
+ * Revision 1.1.1.1  2000/04/29 10:21:19  quarn
+ * initial import
+ *
  *
  */
