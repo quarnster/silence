@@ -18,6 +18,7 @@
 
 package silence;
 
+import java.awt.Component;
 import java.util.*;
 
 import org.komplex.audio.*;
@@ -27,7 +28,7 @@ import silence.format.AudioFormat;
 /**
  * The basic class for silence.
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.5 2000/08/25 17:36:26 quarn Exp $
+ * @version $Id: Silence.java,v 1.6 2000/08/27 12:39:46 quarn Exp $
  */
 public class Silence implements AudioConstants {
 
@@ -41,8 +42,9 @@ public class Silence implements AudioConstants {
 	 * Tries to load and init an audiodevice.
 	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
 	 * @param sound Wheter we want sound output or not (sound or nosound mode)
+	 * @param comp Directsound requires a component reference
 	 */
-	public void init(int soundFormat, boolean sound) throws AudioException {
+	public void init(int soundFormat, boolean sound, Component comp) throws AudioException {
 		AudioOutDeviceFactory factory = new AudioOutDeviceFactory();
 
 		if (sound == false) {
@@ -60,7 +62,7 @@ public class Silence implements AudioConstants {
 
 				// direcsound requires a component reference
 				Hashtable hash = new Hashtable();
-				hash.put(AudioConstants.PROP_COMPONENT, this);
+				hash.put(AudioConstants.PROP_COMPONENT, comp);
 				device.setProperties(hash);
 
 				device.init(soundFormat);
@@ -139,6 +141,9 @@ public class Silence implements AudioConstants {
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.6  2000/08/27 12:39:46  quarn
+ * Directsound requires a component reference
+ *
  * Revision 1.5  2000/08/25 17:36:26  quarn
  * is now like the new version of devices/MuhmuDevice.java
  *
