@@ -14,17 +14,31 @@ CCLASSES = silence\devices\bass\bassglue.obj \
 CLASSES = silence/AudioException.class \
 	silence/devices/AudioDevice.class \
 	silence/devices/midas/MidasDevice.class \
-	silence/devices/midas/MidasException.class
+	silence/devices/midas/MidasException.class \
+	silence/devices/bass/BassDevice.class \
+	silence/devices/bass/BassException.class \
+	silence/devices/fmod/FmodDevice.class \
+	silence/devices/fmod/FmodException.class \
+	silence/devices/MuhmuDevice.class \
+	silence/Silence.class
 
 XM = 	silence/format/xm/Pattern.class \
 	silence/format/xm/Sample.class \
 	silence/format/xm/Instrument.class \
 	silence/format/xm/Xm.class
 
-all: $(CLASSES) $(XM)
+all: $(CLASSES) $(XM) nativelibs
 
 nativelibs: $(CCLASSES)
-        ilink32 fmodglue.obj midasglue.obj bassglue.obj,silence.dll,,fmod.lib midas.lib bass.lib import32.lib, silence.def
+	ilink32 /aa /Tpd c0d32.obj bassglue.obj,bsilence.dll,,bass.lib import32.lib cw32.lib, bsilence.def
+	ilink32 /aa /Tpd c0d32.obj fmodglue.obj,fsilence.dll,,fmod.lib import32.lib cw32.lib, fsilence.def
+	ilink32 /aa /Tpd c0d32.obj midasglue.obj,msilence.dll,,midas.lib import32.lib cw32.lib, msilence.def
+	del *.map
+	del *.ils
+	del *.ilf
+	del *.ilc
+	del *.ild
+	del *.tds
 	del bassglue.*
 	del midasglue.*
 	del fmodglue.*
@@ -46,7 +60,7 @@ clean:
 	del silence\devices\fmod\*.class
 	del silence\devices\bass\*.class
 	del silence\format\xm\*.class
-	del *.dll
+	del *silence.dll
 	del *.jar
 	deltree javadoc
 

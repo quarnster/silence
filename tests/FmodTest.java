@@ -26,9 +26,18 @@ import java.awt.event.*;
 /**
  * An example player for the FMOD device
  * @author Fredrik Ehnbom
- * @version $Id: FmodTest.java,v 1.4 2000/06/20 23:07:20 quarn Exp $
+ * @version $Id: FmodTest.java,v 1.5 2000/06/25 15:52:30 quarn Exp $
  */
 public class FmodTest extends Frame {
+
+	static {
+		try {
+			System.loadLibrary("fsilence");
+		} catch (Throwable t) {
+			System.err.println("could not load library:");
+			t.printStackTrace();
+		}
+	}
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
@@ -123,6 +132,9 @@ public class FmodTest extends Frame {
 /*
  * ChangeLog:
  * $Log: FmodTest.java,v $
+ * Revision 1.5  2000/06/25 15:52:30  quarn
+ * updated
+ *
  * Revision 1.4  2000/06/20 23:07:20  quarn
  * no need to catch an exception when pausing
  *
