@@ -22,6 +22,7 @@ import org.gjt.fredde.silence.format.*;
 import java.io.*;
 
 import com.jcraft.jorbis.*;
+import com.jcraft.jogg.*;
 
 /**
  * Pretty much cut and paste from DecoderExample.java from
@@ -30,7 +31,7 @@ import com.jcraft.jorbis.*;
  * Original author: ymnk <ymnk@jcraft.com>
  *
  * @author Fredrik Ehnbom
- * @version $Id: Ogg.java,v 1.4 2001/01/11 20:25:37 fredde Exp $
+ * @version $Id: Ogg.java,v 1.5 2001/01/27 18:18:35 fredde Exp $
  */
 public class Ogg
 	extends AudioFormat
@@ -107,7 +108,7 @@ public class Ogg
 			throw new IOException ("Error reading initial header packet.");
 		}
 
-		if (op.synthesis_headerin(vi,vc) < 0) {
+		if (vi.synthesis_headerin(vc,op) < 0) {
 			// error case; not a vorbis header
 			throw new IOException("This Ogg bitstream does not contain Vorbis audio data.");
 		}
@@ -127,61 +128,61 @@ public class Ogg
 			while (i < 2) {
 				int result = oy.pageout(og);
 				if (result == 0) break; // Need more data
-				// Don't complain about missing or corrupt data yet.  We'll
-				// catch it at the packet output phase
+										// Don't complain about missing or corrupt data yet.  We'll
+										// catch it at the packet output phase
 
 				if (result == 1) {
 					os.pagein(og);  // we can ignore any errors here
-							// as they'll also become apparent
-							// at packetout
-				        while (i < 2) {
+									// as they'll also become apparent
+									// at packetout
+					while (i < 2) {
 						result = os.packetout(op);
 						if (result == 0) break;
 						if (result == -1) {
-						        // Uh oh; data at some point was corrupted or missing!
-						        // We can't tolerate that in a header.  Die.
-						        throw new IOException("Corrupt secondary header.");
+							// Uh oh; data at some point was corrupted or missing!
+							// We can't tolerate that in a header.  Die.
+							throw new IOException("Corrupt secondary header.");
 						}
-						op.synthesis_headerin(vi,vc);
+						vi.synthesis_headerin(vc,op);
 						i++;
-				        }
+					}
 				}
-		        }
+			}
 			// no harm in not checking before adding more
-		        index = oy.buffer(4096);
-		        buffer = oy.data;
-		        bytes = in.read(buffer, index, 4096);
+			index = oy.buffer(4096);
+			buffer = oy.data;
+			bytes = in.read(buffer, index, 4096);
 
-		        if (bytes == 0 && i < 2){
+			if (bytes == 0 && i < 2){
 				throw new IOException("End of file before finding all Vorbis headers!");
-		        }
-		        oy.wrote(bytes);
+			}
+			oy.wrote(bytes);
 		}
 
 		// Throw the comments plus a few lines about the bitstream we're
 		// decoding
 		{
-		        byte[][] ptr = vc.user_comments;
-		        for (int j = 0; j < ptr.length; j++) {
+			byte[][] ptr = vc.user_comments;
+			for (int j = 0; j < ptr.length; j++) {
 				if (ptr[j] == null) break;
 				System.err.println(new String(ptr[j], 0, ptr[j].length-1));
-		        }
-		        System.err.println("\nBitstream is "+vi.channels+" channel, "+vi.rate+"Hz");
-		        System.err.println("Encoded by: "+new String(vc.vendor, 0, vc.vendor.length-1)+"\n");
+			}
+			System.err.println("\nBitstream is "+vi.channels+" channel, "+vi.rate+"Hz");
+			System.err.println("Encoded by: "+new String(vc.vendor, 0, vc.vendor.length-1)+"\n");
 		}
 
 		// OK, got and parsed all three headers. Initialize the Vorbis
 		//  packet->PCM decoder.
 		vd.synthesis_init(vi);  // central decode state
 		vb.init(vd);            // local state for most of the decode
-				        // so multiple block decodes can
-				        // proceed in parallel.  We could init
-				        // multiple vorbis_block structures
-				        // for vd here
+								// so multiple block decodes can
+								// proceed in parallel.  We could init
+								// multiple vorbis_block structures
+								// for vd here
 		_index = new int[vi.channels];
 	}
 
-	private double[][][] _pcm = new double[1][][];
+	private float[][][] _pcm = new float[1][][];
 	private int[] _index;
 
 
@@ -202,7 +203,7 @@ public class Ogg
 
 	private final int updatePcm() {
 		if (haveBreaked) {
-		        int result = os.packetout(op);
+			int result = os.packetout(op);
 
 			if (result == 0) {
 				return 0;
@@ -212,21 +213,21 @@ public class Ogg
 				haveBreaked = false;
 				// we have a packet.  Decode it
 				if (vb.synthesis(op) == 0) { // test for success!
-				        vd.synthesis_blockin(vb);
+					vd.synthesis_blockin(vb);
 				}
 				// **pcm is a multichannel double vector.  In stereo, for
 				// example, pcm[0] is left, and pcm[1] is right.  samples is
 				// the size of each channel.  Convert the float values
 				// (-1.<=range<=1.) to whatever PCM format and write it out
-	        	        samples = vd.synthesis_pcmout(_pcm, _index);
+				samples = vd.synthesis_pcmout(_pcm, _index);
 				if (samples == 0) {
-		        	        haveBreaked = true;
+					haveBreaked = true;
 				}
 			}
 		} else {
-		        samples = vd.synthesis_pcmout(_pcm, _index);
+				samples = vd.synthesis_pcmout(_pcm, _index);
 			if (samples == 0) {
-			        haveBreaked = true;
+				haveBreaked = true;
 			}
 		}
 		return 1;
@@ -238,7 +239,7 @@ public class Ogg
 		throws IOException
 	{
 		if (haveDataBreaked) {
-		        int result = oy.pageout(og);
+			int result = oy.pageout(og);
 
 			if (result == 0) {
 				readData();
@@ -248,8 +249,8 @@ public class Ogg
 				return -1;
 			} else {
 				haveDataBreaked = false;
-               	        	os.pagein(og);	// can safely ignore errors at
-						// this point
+				os.pagein(og);	// can safely ignore errors at
+								// this point
 			}
 		}
 		return 1;
@@ -269,6 +270,8 @@ public class Ogg
 		try {
 mainLoop:
 			for (int i = off; i < off+len; ) {
+				if (eos != 0) break;
+
 				int result = updateData();
 				if (result < 0) {
 					if (eos != 0) break;
@@ -281,7 +284,7 @@ mainLoop:
 							break;
 						} else if (result == -1) {
 						} else {
-						        int bout = (samples < (off+len-i) ? samples : (off+len-i));
+							int bout = (samples < (off+len-i) ? samples : (off+len-i));
 
 							if (samples == 0) continue;
 
@@ -291,25 +294,25 @@ mainLoop:
 								int right = _index[1];
 
 								while (z < bout && i < (off+len)) {
-	        							buffer[i]    = check((int) (_pcm[0][0][left  + (int) z] * 32767.0)) &65535;
+									buffer[i]    = check((int) (_pcm[0][0][left  + (int) z] * 32767.0)) &65535;
 									buffer[i++] |= check((int) (_pcm[0][1][right + (int) z] * 32767.0)) << 16;
 									z += pitch;
-		        					}
-			        			} else {
+								}
+							} else {
 								int left = _index[0];
 
 								while (z < bout && i < (off+len)) {
 									int val = check((int) (_pcm[0][0][left  + (int) z] * 32767.0));
-	        							buffer[i]    = val &65535;
+									buffer[i]    = val &65535;
 									buffer[i++] |= val << 16;
 									z += pitch;
-		        					}
-			        			}
+								}
+							}
 
 							z = z > samples ? samples : z;
-						        vd.synthesis_read((int) z);     // tell libvorbis how
-											// many samples we
-										        // actually consumed
+							vd.synthesis_read((int) z); // tell libvorbis how
+														// many samples we
+														// actually consumed
 
 							if (bout == 0) {
 								break mainLoop;
@@ -318,22 +321,22 @@ mainLoop:
 					}
 				}
 			}
-		        if (eos != 0) {
-		        	// clean up this logical bitstream
-	                        os.clear();
+			if (eos != 0) {
+				// clean up this logical bitstream
+				os.clear();
 
-		                // ogg_page and ogg_packet structs always point to storage in
-                                // libvorbis.  They're never freed or manipulated directly
-	                        vb.clear();
-	        	        vd.clear();
-	                        vi.clear();  // must be called last
+				// ogg_page and ogg_packet structs always point to storage in
+				// libvorbis.  They're never freed or manipulated directly
+				vb.clear();
+				vd.clear();
+				vi.clear();  // must be called last
 
-	        	        // OK, clean up the framer
-	                	oy.clear();
+				// OK, clean up the framer
+				oy.clear();
 
 				// close InputStream
-		                in.close();
-		        }
+				in.close();
+			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			return -1;
@@ -362,6 +365,9 @@ mainLoop:
 /*
  * ChangeLog:
  * $Log: Ogg.java,v $
+ * Revision 1.5  2001/01/27 18:18:35  fredde
+ * fixed for jOrbis-0.4
+ *
  * Revision 1.4  2001/01/11 20:25:37  fredde
  * added custom toString
  *
