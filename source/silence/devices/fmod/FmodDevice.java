@@ -25,7 +25,7 @@ import silence.devices.AudioDevice;
  * FMOD is Copyright (c) 1999-2000 FireLight Multimedia.<br>
  * You can download FMOD from <a href="http://www.fmod.org">http://www.fmod.org</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: FmodDevice.java,v 1.3 2000/06/08 16:27:05 quarn Exp $
+ * @version $Id: FmodDevice.java,v 1.4 2000/06/20 23:08:32 quarn Exp $
  */
 public class FmodDevice extends AudioDevice implements  Runnable {
 
@@ -121,7 +121,7 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 	/**
 	 * Pause music
 	 */
-        public native void pause() throws FmodException;
+        public native void pause();
 
 	/**
 	 * Stops playing the file
@@ -135,6 +135,9 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 /*
  * ChangeLog:
  * $Log: FmodDevice.java,v $
+ * Revision 1.4  2000/06/20 23:08:32  quarn
+ * removed the exception throwing on pause
+ *
  * Revision 1.3  2000/06/08 16:27:05  quarn
  * moved the loadLibrary function to AudioDevice.java
  *

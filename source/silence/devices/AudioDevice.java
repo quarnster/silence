@@ -26,7 +26,7 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.9 2000/06/20 22:38:59 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.10 2000/06/20 23:08:32 quarn Exp $
  */
 public abstract class AudioDevice {
 
@@ -102,7 +102,7 @@ public abstract class AudioDevice {
 	/**
 	 * Pause the playing of the file
 	 */
-	public abstract void pause() throws AudioException;
+	public abstract void pause();
 
 	/**
 	 * This function is called when a sync event occurs
@@ -123,6 +123,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.10  2000/06/20 23:08:32  quarn
+ * removed the exception throwing on pause
+ *
  * Revision 1.9  2000/06/20 22:38:59  quarn
  * now loads the silence library
  *

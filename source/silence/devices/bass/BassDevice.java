@@ -25,7 +25,7 @@ import silence.devices.AudioDevice;
  * BASS is Copyright (c) 1999-2000 Ian Luck. All rights reserved.<br>
  * You can download BASS from <a href="http://www.un4seen.com/music/">http://www.un4seen.com/music/</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: BassDevice.java,v 1.1 2000/06/10 18:10:04 quarn Exp $
+ * @version $Id: BassDevice.java,v 1.2 2000/06/20 23:08:32 quarn Exp $
  */
 public class BassDevice extends AudioDevice implements  Runnable {
 
@@ -121,7 +121,7 @@ public class BassDevice extends AudioDevice implements  Runnable {
 	/**
 	 * Pause music
 	 */
-        public native void pause() throws BassException;
+        public native void pause();
 
 	/**
 	 * Stops playing the file
@@ -135,6 +135,9 @@ public class BassDevice extends AudioDevice implements  Runnable {
 /*
  * ChangeLog:
  * $Log: BassDevice.java,v $
+ * Revision 1.2  2000/06/20 23:08:32  quarn
+ * removed the exception throwing on pause
+ *
  * Revision 1.1  2000/06/10 18:10:04  quarn
  * the BassDevice
  *
