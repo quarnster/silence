@@ -31,7 +31,7 @@ all: $(CLASSES) $(XM) nativelibs
 
 javadoc:
 	mkdir javadoc
-	javadoc -d javadoc silence silence.devices silence.devices.midas silence.devices.fmod silence.format.xm
+	javadoc -d javadoc silence silence.devices silence.devices.bass silence.devices.midas silence.devices.fmod silence.format.xm
 
 dist: all nativelib jar javadoc
 

@@ -1,3 +1,10 @@
+in 0.0.3:
+	- Lots of fixes. This is actually the first version I'm pleased with.
+	- New syncsystem
+	- Fmod, Bass, Midas and MuhmuAudio are no longer shipped with the releases.
+	  You'll have to download these then compile the layers to them on
+	  your own. Read the GUIDE file for a little help with the process.
+
 in 0.0.2:
 
 	- Added BassDevice
