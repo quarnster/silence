@@ -1,4 +1,4 @@
-/* $Id: EffectManager.java,v 1.1 2003/08/22 12:35:22 fredde Exp $
+/* $Id: EffectManager.java,v 1.2 2003/08/23 07:40:26 fredde Exp $
  * Copyright (C) 2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -29,7 +29,6 @@ class EffectManager {
 	int	currentVolEffect	= -1;
 	int	currentVolEffectParam	= -1;
 
-	int	porta			= 0;
 	int	portaNote		= 0;
 	int	portaTarget		= 0;
 
@@ -46,6 +45,7 @@ class EffectManager {
 
 		switch (currentEffect) {
 			case 0x00: // Arpeggio
+			{
 				int tmp = c.xm.tick % 3;
 				switch (tmp) {
 					case 0:
@@ -55,53 +55,49 @@ class EffectManager {
 					case 2:
 						c.im.setNote(c.currentNote + ((currentEffectParam)&0xf)); break;
 				}
+			}
 				break;
 			case 0x01: // Porta up
-				if (c.xm.tick == 0) return;
-				porta += currentEffectParam;
-
-				c.im.currentPitch += currentEffectParam;
+				c.im.porta -= currentEffectParam << 2;
+				c.im.setNote(c.currentNote);
 				break;
 			case 0x02: // Porta down
-				if (c.xm.tick == 0) return;
-				porta -= currentEffectParam;
-
-				c.im.currentPitch -= currentEffectParam;
+				c.im.porta += currentEffectParam << 2;
+				c.im.setNote(c.currentNote);
 				break;
-/*
-			case 0x03: // Porta slide
-//				if (xm.tick == 0) return;
-				if (im.currentPitch < portaTarget) {
-					im.currentPitch += currentEffectParam << 10;
 
-					if (im.currentPitch > portaTarget) {
-						im.currentPitch = portaTarget;
+			case 0x03: // Porta slide
+				if (c.im.porta < portaTarget) {
+					c.im.porta += currentEffectParam << 2;
+
+					if (c.im.porta >= portaTarget) {
 						currentEffect = -1;
 					}
 				} else {
-					im.currentPitch -= currentEffectParam << 10;
+					c.im.porta -= currentEffectParam << 2;
 
-					if (im.currentPitch < portaTarget) {
-						im.currentPitch = portaTarget;
+					if (c.im.porta <= portaTarget) {
 						currentEffect = -1;
 					}
 				}
-//				im.setNote(currentNote + porta);
 
 				if (currentEffect == -1) {
-					porta = 0;
-					currentNote = portaNote;
-					im.setNote(currentNote);
+					portaTarget = 0;
+					c.im.porta = 0;
+					c.currentNote = portaNote;
 				}
+				c.im.setNote(c.currentNote);
 				break;
-*/
-/*
+
 			case 0x09: // sample offset
 				currentEffect = -1;
 
-				setPosition(currentEffectParam << 8);
+				if (currentEffectParam != 0) {
+					c.im.trigger();
+					c.im.setPosition(currentEffectParam << 8);
+				}
 				break;
-*/
+
 			case 0x0A: // Volume slide
 				c.im.currentVolume += (currentEffectParam & 0xF0) != 0 ?
 							 (currentEffectParam >> 4) & 0xF :
@@ -124,6 +120,10 @@ class EffectManager {
 					} else {
 						currentEffectParam = (eff << 4) + (currentEffectParam & 0xF) - 1;
 					}
+				} else if (eff == 0x02) { // fine porta down
+					c.im.porta += (currentEffectParam & 0xF) << 2;
+					c.im.setNote(c.currentNote);
+					currentEffect = -1;
 				}
 				break;
 			case 0x0F:	// set tempo
@@ -142,9 +142,6 @@ class EffectManager {
 				currentEffect = -1;
 				break;
 			case 0x11: // global volume slide (Hxx)
-				if (c.xm.tick <= 1) return;
-				if (c.xm.tick + 1 >= c.xm.defaultTempo) currentEffect = -1;
-
 				c.xm.globalVolume += (currentEffectParam & 0xF0) != 0 ?
 						(currentEffectParam >> 4) & 0xF :
 						-(currentEffectParam & 0xF);
@@ -163,13 +160,13 @@ class EffectManager {
 				break;
 
 			default: // unknown effect
-				System.out.println("unknown: " + currentEffect);
+				System.out.println("unknown effect: " + currentEffect);
 				currentEffect = -1;
 				break;
 		}
 	}
 
-	public void setEffect(int newEffect, int newEffectParam) {
+	public int setEffect(int newEffect, int newEffectParam, int newNote) {
 		if (newEffectParam == -1) newEffectParam = 0;
 
 		if (newEffectParam == 0) {
@@ -205,21 +202,22 @@ effectLoop:
 		} else {
 			currentEffectParam = newEffectParam;
 		}
-/*
+
 		if (newEffect == 0x03) {
 			if (newNote != -1 && newNote != 97) {
 				portaNote = newNote;
-				//portaTarget = newNote - currentNote;
-				portaTarget = (int) (im.calcPitch(newNote) * 1024);
-			}
-//			System.out.println("target: " + portaTarget);
-			if (newNote != 97)
+				portaTarget = c.im.getPeriod(portaNote) - c.im.getPeriod(c.currentNote);
+				if (c.im.release) {
+					c.im.setNote(c.currentNote);
+				}
+				c.im.trigger();
 				newNote = -1;
-//				porta = 0;
-//				newEffect = currentEffect = -1;
+			}
 		}
-*/
+
 		currentEffect = newEffect;
+
+		return newNote;
 	}
 
 	public void updateVolume() {
@@ -270,6 +268,9 @@ effectLoop:
 
 /*
  * $Log: EffectManager.java,v $
+ * Revision 1.2  2003/08/23 07:40:26  fredde
+ * porta effects now working. 9xx implemented
+ *
  * Revision 1.1  2003/08/22 12:35:22  fredde
  * moved effects from Channel to EffectManager
  *
