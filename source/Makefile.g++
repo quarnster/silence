@@ -31,10 +31,8 @@ javadoc:
 	mkdir javadoc
 	javadoc -d javadoc silence silence.devices silence.devices.midas silence.devices.fmod silence.format.xm
 
-dist: all nativelibs jar javadoc
+dist: all nativelib jar javadoc
 
-nativelibs: midaslib
-	
 .java.class:
 	$(JAVAC) $(JAVAFLAGS) $<
 
@@ -56,5 +54,5 @@ jar:
 	silence/devices/midas/*.class \
 	silence/devices/fmod/*.class
 
-midaslib:
-	$(CC) $(CFLAGS) silence/devices/midas/midas.c -lmidas -o libmidasglue.so
+nativelib:
+	$(CC) $(CFLAGS) silence/devices/midas/midasglue.c -lmidas -o libsilence.so

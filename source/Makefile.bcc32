@@ -1,21 +1,20 @@
-CLASSPATH = ./
+CLASSPATH = ./;c:\jdk1.3\jre\lib\rt.jar
 JAVAC = jikes
-JAVAFLAGS = -g -deprecation
-JAVADIR = \jdk1.2.2
+JAVAFLAGS = -g -deprecation -classpath $(CLASSPATH)
 
 CC = bcc32
 CFLAGS = -P -w- -c
 
-.SUFFIXES: .class .java .o .c
+.SUFFIXES: .class .java .obj .c
+
+CCLASSES = silence\devices\bass\bassglue.obj \
+        silence\devices\fmod\fmodglue.obj \
+        silence\devices\midas\midasglue.obj
 
 CLASSES = silence/AudioException.class \
 	silence/devices/AudioDevice.class \
 	silence/devices/midas/MidasDevice.class \
-	silence/devices/midas/MidasException.class \
-	silence/devices/fmod/FmodDevice.class \
-	silence/devices/fmod/FmodException.class \
-	silence/devices/bass/BassDevice.class \
-	silence/devices/bass/BassException.class
+	silence/devices/midas/MidasException.class
 
 XM = 	silence/format/xm/Pattern.class \
 	silence/format/xm/Sample.class \
@@ -24,16 +23,21 @@ XM = 	silence/format/xm/Pattern.class \
 
 all: $(CLASSES) $(XM)
 
-dist: all nativelibs jar javadoc
-
-nativelibs: fmodlib basslib midaslib
+nativelibs: $(CCLASSES)
+        ilink32 fmodglue.obj midasglue.obj bassglue.obj,silence.dll,,fmod.lib midas.lib bass.lib import32.lib, silence.def
+	del bassglue.*
+	del midasglue.*
+	del fmodglue.*
 	
-.java.class:
-	$(JAVAC) $(JAVAFLAGS) $<
 
 javadoc:
 	mkdir javadoc
 	javadoc -d javadoc silence silence.devices silence.devices.midas silence.devices.fmod silence.format.xm
+
+dist: all nativelibs jar javadoc
+
+.java.class:
+	$(JAVAC) $(JAVAFLAGS) $<
 
 clean:
 	del silence\*.class
@@ -46,17 +50,9 @@ clean:
 	del *.jar
 	deltree javadoc
 
+.c.obj:
+	$(CC) $(CFLAGS)	$<
+
 jar:
 	jar cvf silence.jar silence/*.class silence/devices/*.class silence/devices/midas/*.class
 
-fmodlib:
-	$(CC) $(CFLAGS) silence\devices\fmod\fmodglue.c
-	ilink32 silence\devices\fmod\fmodglue.obj,fmodglue.dll,,silence\devices\fmod\fmod.lib
-
-basslib:
-	$(CC) $(CFLAGS) silence\devices\bass\bassglue.c
-	ilink32 silence\devices\bass\bassglue.obj,bassglue.dll,,silence\devices\bass\bass.lib import32.lib
-
-midaslib:
-	$(CC) $(CFLAGS) silence\devices\midas\midas.c
-	ilink32 silence\devices\midas\midas.obj,midasglue.dll,,silence\devices\midas\midas.lib
