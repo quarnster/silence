@@ -1,4 +1,4 @@
-/* $Id: EffectManager.java,v 1.2 2003/08/23 07:40:26 fredde Exp $
+/* $Id: EffectManager.java,v 1.3 2003/08/23 13:45:39 fredde Exp $
  * Copyright (C) 2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -209,8 +209,10 @@ effectLoop:
 				portaTarget = c.im.getPeriod(portaNote) - c.im.getPeriod(c.currentNote);
 				if (c.im.release) {
 					c.im.setNote(c.currentNote);
+					c.im.trigger();
 				}
-				c.im.trigger();
+				c.im.porta = 0;
+				c.im.active = true;
 				newNote = -1;
 			}
 		}
@@ -268,6 +270,9 @@ effectLoop:
 
 /*
  * $Log: EffectManager.java,v $
+ * Revision 1.3  2003/08/23 13:45:39  fredde
+ * more 3xx fixes
+ *
  * Revision 1.2  2003/08/23 07:40:26  fredde
  * porta effects now working. 9xx implemented
  *
