@@ -29,7 +29,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.3 2001/01/06 10:39:48 fredde Exp $
+ * @version $Id: Silence.java,v 1.4 2001/01/11 20:23:23 fredde Exp $
  */
 public class Silence
 	implements AudioConstants
@@ -42,11 +42,20 @@ public class Silence
 
 	/**
 	 * Sets the device to use for audioplaying
+	 *
 	 * @param device The AudioOutDevice
 	 */
 	public void setDevice(AudioOutDevice device) {
 		this.device = device;
 	}
+
+	/**
+	 * Gets the device used for audioplaying
+	 */
+	public AudioOutDevice getDevice() {
+		return device;
+	}
+
 
 	/**
 	 * Tries to load and init an audiodevice.
@@ -207,6 +216,9 @@ public class Silence
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.4  2001/01/11 20:23:23  fredde
+ * Added getDevice method
+ *
  * Revision 1.3  2001/01/06 10:39:48  fredde
  * added the setDevice method
  *
