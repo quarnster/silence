@@ -28,7 +28,7 @@ import org.komplex.audio.*;
  * for, lets say, .mp3-files this is the class to extend.
  *
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.4 2001/01/04 18:53:46 fredde Exp $
+ * @version $Id: AudioFormat.java,v 1.5 2001/01/08 19:47:52 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -37,14 +37,8 @@ public abstract class AudioFormat
 	/** List of formats */
 	private static Hashtable flist = new Hashtable();
 
-	/** the samplerate for the device used */
-	public int deviceSampleRate = 0;
-
-	/** play loud? */
-	protected boolean playLoud = true;
-
-	/** number of channels */
-	protected int channels = 0;
+	/** The AudioOutDevice used to play this format */
+	protected AudioOutDevice device;
 
 	static {
 		// put all supported formats to the format list
@@ -138,14 +132,16 @@ public abstract class AudioFormat
 	 * @param device The device to use
 	 */
 	public void setDevice(AudioOutDevice device) {
-		playLoud = !(device instanceof org.komplex.audio.device.NoSoundDevice);
-		deviceSampleRate = device.getSampleRate();
-		channels = device.getChannels();
+		this.device = device;
 	}
 }
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.5  2001/01/08 19:47:52  fredde
+ * makes more sense to save the actual device instead
+ * of lots of variables
+ *
  * Revision 1.4  2001/01/04 18:53:46  fredde
  * added ogg and the close method
  *
