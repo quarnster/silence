@@ -24,7 +24,7 @@ import java.io.*;
  * This class stores information about an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.5 2000/12/21 17:20:37 fredde Exp $
+ * @version $Id: Instrument.java,v 1.6 2003/08/22 06:56:48 fredde Exp $
  */
 class Instrument {
 	Sample[]	sample;
@@ -36,6 +36,7 @@ class Instrument {
 	int		volSustain;
 	int		volLoopStart;
 	int		volLoopEnd;
+
 
 	public Instrument(BufferedInputStream in)
 		throws IOException
@@ -76,7 +77,8 @@ class Instrument {
 			// Number of volume points
 			int points = in.read();
 			volumeEnvelopePoints = new Point[points]; //new int[points * 2];
-			volumeEnvInfo = new Point2Df[points];
+			if (points > 0)
+				volumeEnvInfo = new Point2Df[points-1];
 
 			int pos = 0;
 			for (int i = 0; i < points; i++, pos += 2) {
@@ -161,6 +163,9 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
+ * Revision 1.6  2003/08/22 06:56:48  fredde
+ * volumeEnvInfo should have one less 'point'
+ *
  * Revision 1.5  2000/12/21 17:20:37  fredde
  * precalc k-values for volume envelopes
  *
