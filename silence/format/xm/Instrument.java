@@ -23,23 +23,33 @@ import java.io.*;
  * This class stores information about an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
+ * @version $Id: Instrument.java,v 1.2 2000/10/07 13:49:08 fredde Exp $
  */
 class Instrument {
 
-	protected Sample sample[];
+	Sample[]	sample;
+	int[]		volumeEnvelopePoints; // = new byte[48];
+	int		fadeoutVolume;
+	int		volType;
+	int		volSustain;
+	int		volLoopStart;
+	int		volLoopEnd;
 
 	public Instrument(BufferedInputStream in)
 		throws IOException
 	{
 		// Instrument size
-		byte b[] = new byte[4];
-		in.read(b);
-		int size = (int) (b[0]) - 7;
+		byte b[] = Xm.read(in, 4);
+		int[] t = new int[4];
+		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
+		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
+		int size = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+
 
 		// Instrument name
-		b = new byte[22];
-		in.read(b);
+		b = Xm.read(in, 22);
 		System.out.println("Name: " + new String(b));
 
 		// Instrument type (always 0)
@@ -47,46 +57,61 @@ class Instrument {
 		in.read();
 
 		// Number of samples in instrument
-		b = new byte[2];
-		in.read(b);
+		b = Xm.read(in, 2);
 		sample = new Sample[b[0]];
 
-		// Seems like it is four extra bytes to read here
-		if (size > 0) {
-			for (int i = 0; i < 4; i++) in.read();
-		}
-
-		if (sample.length > 0) {
+		if (sample.length == 0) {
+			b = Xm.read(in, size - 29);
+		} else {
 			// Sample header size
-			b = new byte[4];
-			in.read(b);
+			b = Xm.read(in, 4);
+			t = new int[4];
+			t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+			t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+			t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
+			t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
+			int ssize = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+			if (ssize != 40) {
+				throw new IOException("samplesize != 40!");
+			}
+
 
 			// Sample number for all notes
-			b = new byte[96];
-			in.read(b);
+			b = Xm.read(in, 96);
 
 			// Points for volume envelope
-			b = new byte[48];
-			in.read(b);
+			byte[] tmp = Xm.read(in, 48);
 
 			// Points for panning envelope
-			b = new byte[48];
-			in.read(b);
+			b = Xm.read(in, 48);
 
 			// Number of volume points
-			in.read();
+			int points = in.read();
+			volumeEnvelopePoints = new int[points * 2];
+			System.out.println("envpoints: " + points);
+
+			int pos = 0;
+			for (int i = 0; i < points * 2; i++) {
+				volumeEnvelopePoints[i] = tmp[pos++];
+				volumeEnvelopePoints[i] += (tmp[pos++] * 256);
+
+				if (volumeEnvelopePoints[i] < 0) {
+					volumeEnvelopePoints[i] = 256 + volumeEnvelopePoints[i];
+				}
+			}
 
 			// Number of panning points 
 			in.read();
 
 			// Volume sustain point
-			in.read();
+			volSustain = in.read();
+			System.out.println("sustain: " + volSustain);
 
 			// Volume loop start point
-			in.read();
+			volLoopStart = in.read();
 
 			// Volume loop end point
-			in.read();
+			volLoopEnd = in.read();
 
 			// Panning sustain point
 			in.read();
@@ -98,7 +123,8 @@ class Instrument {
 			in.read();
 
 			// Volume type: bit 0: on; 1: Sustain; 2: Loop
-			in.read();
+			volType = in.read();
+			System.out.println("volType: " + (((volType & 0x2) != 0) ? "sustain" : ((volType & 0x4) != 0) ? "loop" : "on"));
 
 			// Panning type: bit 0: on; 1: Sustain; 2: Loop
 			in.read();
@@ -112,16 +138,18 @@ class Instrument {
 			// Vibrato depth
 			in.read();
 
-			// Vibrator rate
+			// Vibrato rate
 			in.read();
 
 			// Volume fadeout
-			b = new byte[2];
-			in.read(b);
+			b = Xm.read(in, 2);
+			t = new int[2];
+			t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+			t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+			fadeoutVolume= (t[0] << 0) + (t[1] << 8);
 
 			// reserved
-			b = new byte[22];
-			in.read(b);
+			b = Xm.read(in, 22);
 
 			for (int i = 0; i < sample.length; i++) {
 				sample[i] = new Sample(in);
@@ -135,7 +163,10 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
- * Revision 1.1  2000/09/25 16:34:34  fredde
- * Initial revision
+ * Revision 1.2  2000/10/07 13:49:08  fredde
+ * fixed to read the data correctly
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
+ * initial commit
  *
  */
