@@ -24,7 +24,7 @@ import java.io.*;
  * This class stores information about an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.6 2003/08/22 06:56:48 fredde Exp $
+ * @version $Id: Instrument.java,v 1.7 2003/09/01 09:06:29 fredde Exp $
  */
 class Instrument {
 	Sample[]	sample;
@@ -37,6 +37,10 @@ class Instrument {
 	int		volLoopStart;
 	int		volLoopEnd;
 
+	int		vibType;
+	int		vibSweep;
+	int		vibDepth;
+	int		vibRate;
 
 	public Instrument(BufferedInputStream in)
 		throws IOException
@@ -134,16 +138,16 @@ class Instrument {
 			in.read();
 
 			// Vibrato type
-			in.read();
+			vibType = in.read();
 
 			// Vibrato sweep
-			in.read();
+			vibSweep = in.read();
 
 			// Vibrato depth
-			in.read();
+			vibDepth = in.read();
 
 			// Vibrato rate
-			in.read();
+			vibRate = in.read();
 
 			// Volume fadeout
 			fadeoutVolume= Xm.make16Bit(Xm.read(in, 2));
@@ -163,6 +167,9 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
+ * Revision 1.7  2003/09/01 09:06:29  fredde
+ * vibrato
+ *
  * Revision 1.6  2003/08/22 06:56:48  fredde
  * volumeEnvInfo should have one less 'point'
  *
