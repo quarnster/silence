@@ -1,6 +1,9 @@
 
 Fredrik Ehnbom <fredde@gjt.org>
 
+patch for readin .gz-files submitted by:
+Henrik Raula <henrik.raula@lailanet.fi>
+
 
 Some libraries are also used by silence. In the "README" file you can see a list
 of these libraries and their respective homepages. Please go to the hompages of
