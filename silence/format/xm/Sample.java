@@ -23,7 +23,7 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.7 2002/03/20 13:30:04 fredde Exp $
+ * @version $Id: Sample.java,v 1.8 2003/08/21 09:22:21 fredde Exp $
  */
 class Sample {
 	private int sampleLength = 0;
@@ -35,8 +35,9 @@ class Sample {
 
 	byte relativeNote = 0;
 	byte fineTune = 0;
+	int volume;
+
 	short[] sampleData;
-	int	volume;
 
 
 	public Sample(BufferedInputStream in)
@@ -51,6 +52,9 @@ class Sample {
 		// Sample loop length
 		loopEnd = Xm.make32Bit(Xm.read(in, 4));
 
+		if (loopStart + loopEnd > sampleLength)
+			loopEnd = (sampleLength) - loopStart;
+
 		// Volume
 		volume = in.read();
 
@@ -63,6 +67,11 @@ class Sample {
 		//                4: 16-bit sampledata
 		loopType = in.read();
 		sampleQuality = ((int) loopType & 0x10) != 0 ? 16 : 8;
+
+		if ((loopType & 0x3) == 0) {
+			// no looping
+			loopEnd = sampleLength;
+		}
 
 		// Panning (0-255)
 		in.read();
@@ -93,7 +102,7 @@ class Sample {
 			int samp = 0;
 
 			for (int i = 0; i < sampleData.length; i++, tmpPos += 2) {
-				samp += Xm.make16Bit(temp, tmpPos)&0xffff;
+				samp += Xm.make16Bit(temp, tmpPos);
 				sampleData[i] = (short) (samp);
 			}
 		} else {
@@ -106,11 +115,16 @@ class Sample {
 				sampleData[i] = (short) (samp << 8);
 			}
 		}
+		loopStart <<= 10;
+		loopEnd <<= 10;
 	}
 }
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.8  2003/08/21 09:22:21  fredde
+ * loopfixes
+ *
  * Revision 1.7  2002/03/20 13:30:04  fredde
  * sampleData is now an array of shorts to assure 16-bit sound quality
  *
