@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.3 2000/10/12 15:53:47 fredde Exp $
+# $Id: Makefile,v 1.4 2001/01/04 18:52:58 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
@@ -22,7 +22,8 @@ formats: $(CLASSES) \
 	org/gjt/fredde/silence/format/xm/Instrument.class \
 	org/gjt/fredde/silence/format/xm/Channel.class \
 	org/gjt/fredde/silence/format/xm/Xm.class \
-	org/gjt/fredde/silence/format/au/Au.class
+	org/gjt/fredde/silence/format/au/Au.class \
+	org/gjt/fredde/silence/format/ogg/Ogg.class
 
 tests: formats \
 	tests/SimplePlayTest.class
@@ -49,5 +50,6 @@ jar: all
 
 clean:
 	rm -f `find org/gjt/fredde/silence/ -regex .*.class -print`
+	rm -f `find org/gjt/fredde/silence/ -regex .*~ -print`
 	rm -f silence.jar
 	rm -f -r javadoc
