@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.1 2000/09/25 16:34:33 fredde Exp $
+ * @version $Id: Xm.java,v 1.2 2000/10/01 17:09:31 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
@@ -35,6 +35,14 @@ public class Xm
 	private String tracker = "";
 	private int patorder[];
 
+	int default_tempo = 0;
+	int default_bpm = 0;
+	int tempo = 0;
+
+	public int samples_per_tick;
+
+	private int playingPatternPos = 0;
+	private int playingPattern = 0;
 	private int patternPos = 0;
 
 	private	Pattern[]	pattern;
@@ -141,12 +149,18 @@ public class Xm
 		// Default tempo
 		b = new byte[2];
 		in.read(b);
+		default_tempo = (int) b[0];
 		System.out.println("Default tempo: " + b[0]);
 
 		// Default BPM
 		b = new byte[2];
+		int t[] = new int[2];
 		in.read(b);
-		System.out.println("Default BPM: " + (int) ((b[0] < 0) ? 256 + b[0] : b[0]));
+
+		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+		default_bpm = (t[0] << 0) + (t[1] << 8);
+		System.out.println("Default BPM: " + default_bpm);
 
 		// Pattern order table
 		b = new byte[256];
@@ -159,21 +173,48 @@ public class Xm
 
 			patorder[i] = b[i];
 		}
+		playingPattern = patorder[0];
 	}
 
 	/**
 	 * Play...
 	 */
 	public int read(int[] buffer, int off, int len) {
-		patternPos += channel[0].update(pattern[0], patternPos, buffer, off, len);
+		for (int i = off; i < off+len; i++) {
+			buffer[i] = 0;
+		}
+		for (int i = 0; i < channel.length; i++)  {
+			channel[i].play(buffer, off, samples_per_tick);
+		}
 
-		return len;
+		if (--tempo <= 0) {
+			for (int i = 0; i < channel.length; i++)  {
+				patternPos = channel[i].update(pattern[playingPattern], patternPos);
+			}
+			if (patternPos == pattern[playingPattern].data.length) {
+				patternPos = 0;
+				playingPatternPos++;
+				playingPattern = patorder[playingPatternPos];
+				System.out.println("Pattern: " + playingPattern);
+			}
+			tempo = default_tempo;
+		}
+		return samples_per_tick;
+	}
+
+	public void setDevice(org.komplex.audio.AudioOutDevice device) {
+		super.setDevice(device);
+		samples_per_tick = (5 * deviceSampleRate) / (2 * default_bpm);
+		System.out.println("samples_per_tick: " + samples_per_tick);
 	}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
- * Revision 1.1  2000/09/25 16:34:33  fredde
- * Initial revision
+ * Revision 1.2  2000/10/01 17:09:31  fredde
+ * added lots of code for acctual playback
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:33  fredde
+ * initial commit
  *
  */
