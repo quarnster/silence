@@ -23,95 +23,146 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.2 2000/10/01 17:08:50 fredde Exp $
+ * @version $Id: Sample.java,v 1.3 2000/10/07 13:52:46 fredde Exp $
  */
 class Sample {
-	private int samplelength = 0;
-	private int looptype = 0;
-	private int samplequality = 0;
-	protected int relativenote = 0;
-	protected int finetune = 0;
-	protected byte[] sampleData;
+	private int sampleLength = 0;
+	private int sampleQuality = 0;
+
+	int loopType = 0;
+	int loopStart = 0;
+	int loopEnd = 0;
+
+	int relativeNote = 0;
+	int fineTune = 0;
+	byte[] sampleData;
+	int	volume;
 
 
 	public Sample(BufferedInputStream in)
 		throws IOException
 	{
 		// Sample length
-		byte b[] = new byte[4];
-		in.read(b);
+		byte b[] = Xm.read(in, 4);
 
 		int t[] = new int[4];
 		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
 		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
 		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
 		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
-		samplelength = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+		sampleLength = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
 
 		// Sample loop start
-		b = new byte[4];
-		in.read(b);
+		b = Xm.read(in, 4);
+		t = new int[4];
+		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
+		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
+		loopStart = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
 
 		// Sample loop length
-		b = new byte[4];
-		in.read(b);
+		b = Xm.read(in, 4);
+		t = new int[4];
+		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
+		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
+		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
+		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
+		loopEnd = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
 
 		// Volume
-		in.read();
+		volume = in.read();
 
 		// Finetune (signend byte -128...+127)
-		finetune = in.read();
+		fineTune = in.read();
+		if (fineTune > 127) fineTune -= 256;
+		System.out.println("fineTune: " + fineTune);
 
 		// Type: Bit 0-1: 0 = No loop,
 		//                1 = Forward loop,
 		//		  2 = Ping-pong loop;
 		//                4: 16-bit sampledata
-		looptype = in.read();
-		samplequality = ((int) looptype & 0x10) != 0 ? 16 : 8;
+		loopType = in.read();
+		sampleQuality = ((int) loopType & 0x10) != 0 ? 16 : 8;
+		System.out.println("looptype: " + ((loopType & 0x1) != 0 ? "forward loop" : (loopType & 0x2) != 0 ? "pingpong" : "noloop"));
 
 		// Panning (0-255)
 		in.read();
 
 		// Relative note number (signed byte)
-		relativenote = in.read();
+		relativeNote = in.read();
+		if (relativeNote > 95) relativeNote -= 256;
+		System.out.println("relativeNote: " + relativeNote);
 
 		// Reserved
 		in.read();
 
 		// Sample name
-		b = new byte[22];
-		in.read(b);
+		b = Xm.read(in, 22);
 	}
 
 	public void readData(BufferedInputStream in)
 		throws IOException
 	{
-		if (samplequality == 16) {
-			samplelength >>= 1;
-			sampleData = new byte[2 * samplelength];
+		if (sampleQuality == 16) {
+			// TODO: fix...
+			sampleLength >>= 1;
+			byte[] temp = Xm.read(in, 2 * sampleLength);
+			sampleData = new byte[sampleLength];
+
+			for (int i = 0; i < temp.length - 1; i++) {
+				byte tmp = temp[i];
+				temp[i] = temp[i + 1];
+				temp[i + 1] = tmp;
+			}
+
+/*
+			int p = 0;
+			int old = 0;
+
+			for (int i = 0; i < temp.length; i++) {
+				p = ((int) temp[i]) + old;
+				temp[i] = (byte) p;
+				old = p;
+			}
+*/
+
+			int tmpPos = 0;
+			for (int i = 0; i < sampleData.length; i++) {
+				sampleData[i] = (byte) (temp[tmpPos++] + temp[tmpPos++] >> 8);
+			}
+
+			int p = 0;
+			int old = 0;
+
+			for (int i = 0; i < sampleData.length; i++) {
+				p = sampleData[i] + old;
+				sampleData[i] = (byte) p;
+				old = p;
+			}
+
 		} else {
-			sampleData = new byte[samplelength];
-		}
+			sampleData = Xm.read(in, sampleLength);
 
-		int read = in.read(sampleData);
-		while (read != sampleData.length) {
-			read += in.read(sampleData, read, sampleData.length - read);
-		}
+			int p = 0;
+			int old = 0;
 
+			for (int i = 0; i < sampleData.length; i++) {
+				p = ((int) sampleData[i]) + old;
+				sampleData[i] = (byte) p;
+				old = p;
+			}
 
-		int p = 0;
-		int old = 0;
-
-		for(int i = 0; i < sampleData.length; i++) {
-			p = ((int) sampleData[i]) + old;
-			sampleData[i] = (byte) p;
-			old = p;
 		}
 	}
 }
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.3  2000/10/07 13:52:46  fredde
+ * Fixed to read in correctly.
+ * Finetunes and relativenotes are working now.
+ *
  * Revision 1.2  2000/10/01 17:08:50  fredde
  * no longer uses Pattern.isSet()
  *
