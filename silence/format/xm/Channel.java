@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.11 2003/08/21 09:25:35 fredde Exp $
+ * @version $Id: Channel.java,v 1.12 2003/08/22 06:51:26 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -33,89 +33,69 @@ class Channel {
 	}
 
 	int		currentNote		= 0;
-//	Instrument	currentInstrument	= null;
-	int		currentVolume		= 64;
 	int		currentEffect		= -1;
 	int		currentEffectParam	= 0;
 
-//	int		currentPitch		= 0;
-//	int		currentPos		= 0;
-
-//	int		currentLoopStart	= 0;
-//	int		currentLoopEnd		= 0;
-
-
-//	float		rowVol;
-//	float		finalVol;
+	int		porta = 0;
+	int		portaNote = 0;
+	int		portaTarget = 0;
 
 
 
 	int timer = 0;
 	private final void updateEffects() {
 		switch (currentEffect) {
-
 			case 0x00: // Arpeggio
-				if (timer == 3) break;
-				int tmp = timer % 3;
+				int tmp = xm.tick % 3;
 				switch (tmp) {
 					case 0:
-						im.playNote(currentNote); break;
+						im.setNote(currentNote); break;
 					case 1:
-						im.playNote(currentNote + (currentEffectParam >> 4)&0xf); break;
+						im.setNote(currentNote + ((currentEffectParam >> 4)&0xf)); break;
 					case 2:
-						im.playNote(currentNote + (currentEffectParam)&0xf); break;
-				}
-				timer++;
-				if (timer == 3) {
-					currentEffect = -1;
+						im.setNote(currentNote + ((currentEffectParam)&0xf)); break;
 				}
 				break;
-
-/*
 			case 0x01: // Porta up
-				if (qxm.tick == 0) return;
-				porta -= currentEffectParam << 2;
+				if (xm.tick == 0) return;
+				porta += currentEffectParam;
 
-				if (porta < -856*4) {
-					porta = -856*4;
-					currentEffect = -1;
-				}
-				setPitch(calcPitch(currentNote));
+				im.currentPitch += currentEffectParam;
 				break;
 			case 0x02: // Porta down
-				if (qxm.tick == 0) return;
-				porta += currentEffectParam << 2;
+				if (xm.tick == 0) return;
+				porta -= currentEffectParam;
 
-				if (porta > 856*4) {
-					porta = 856*4;
-					currentEffect = -1;
-				}
-				setPitch(calcPitch(currentNote));
+				im.currentPitch -= currentEffectParam;
 				break;
+/*
 			case 0x03: // Porta slide
+//				if (xm.tick == 0) return;
+				if (im.currentPitch < portaTarget) {
+					im.currentPitch += currentEffectParam << 10;
 
-				if (porta < portaTarget) {
-					porta += currentEffectParam << 2;
-
-					if (porta > portaTarget) {
-						porta = portaTarget;
+					if (im.currentPitch > portaTarget) {
+						im.currentPitch = portaTarget;
 						currentEffect = -1;
 					}
 				} else {
-					porta -= currentEffectParam << 2;
+					im.currentPitch -= currentEffectParam << 10;
 
-					if (porta < portaTarget) {
-						porta = portaTarget;
+					if (im.currentPitch < portaTarget) {
+						im.currentPitch = portaTarget;
 						currentEffect = -1;
 					}
 				}
+//				im.setNote(currentNote + porta);
 
 				if (currentEffect == -1) {
 					porta = 0;
 					currentNote = portaNote;
-					setPitch(calcPitch(currentNote));
+					im.setNote(currentNote);
 				}
 				break;
+*/
+/*
 			case 0x09: // sample offset
 				currentEffect = -1;
 
@@ -127,7 +107,7 @@ class Channel {
 							 (currentEffectParam >> 4) & 0xF :
 							-(currentEffectParam & 0xF);
 
-				im.currentVolume = currentVolume < 0 ? 0 : currentVolume > 64 ? 64 : currentVolume;
+				im.currentVolume = im.currentVolume < 0 ? 0 : im.currentVolume > 64 ? 64 : im.currentVolume;
 
 				if (im.currentVolume == 0 && (currentEffectParam & 0xF0) == 0) currentEffect = -1;
 				break;
@@ -140,7 +120,7 @@ class Channel {
 				int eff = (currentEffectParam >> 4) & 0xF;
 				if (eff == 0x0C) { // note cut
 					if ((currentEffectParam & 0xF) == 0) {
-						im.currentVolume = 0;
+						im.active = false;
 					} else {
 						currentEffectParam = (eff << 4) + (currentEffectParam & 0xF) - 1;
 					}
@@ -168,14 +148,14 @@ class Channel {
 						(currentEffectParam >> 4) & 0xF :
 						-(currentEffectParam & 0xF);
 				break;
-/*
+
 			case 0x1B: // Multi retrig note (Rxx)
-				if (qxm.tick == 0) return;
-				if (qxm.tick % currentEffectParam == 0) {
-					this.trigger();
+				if (xm.tick == 0) return;
+				if (im.active && xm.tick % currentEffectParam == 0) {
+					im.trigger();
 				}
 				break;
-*/
+
 			default: // unknown effect
 				System.out.println("unknown: " + currentEffect);
 				currentEffect = -1;
@@ -203,94 +183,129 @@ class Channel {
 	final int update(Pattern pattern, int patternpos) {
 		int check = pattern.data[patternpos++];
 
+		int newNote = -1;
+		Instrument newInstrument = null;
+		int newVolume = -1;
+		int newEffect = -1;
+		int newEffectParam = -1;
+
 		if ((check & 0x80) != 0) {
 			// note
-			if ((check & 0x1) != 0) {
-				currentNote = pattern.data[patternpos++];
-				timer = 0;
-				if (currentNote == 97) {
-					im.release();
-				} else {
-					im.playNote(currentNote);
-				}
-			}
+			if ((check & 0x1) != 0)	newNote = pattern.data[patternpos++];
 
 			// instrument
 			if ((check & 0x2) != 0) {
-				currentEffect = -1;
-				timer = 0;
-
-				int instr = pattern.data[patternpos++] - 1;
-				if (instr >= xm.instrument.length)  im.setInstrument(null);
-				else im.setInstrument(xm.instrument[instr]);
-
-				im.playNote(currentNote);
+				int tmp = pattern.data[patternpos++] - 1;
+				if (tmp < xm.instrument.length)
+					newInstrument = xm.instrument[tmp];
 			}
 
 			// volume
-			if ((check & 0x4) != 0) {
-				int tmp = pattern.data[patternpos++]&0xff;
-
-				if (tmp <= 0x50) { // volume
-					im.currentVolume = tmp-1;
-				} else if (tmp < 0x70) { // volume slide down
-					currentEffect = 0x0A;
-					currentEffectParam = (tmp - 0x40);
-				} else if (tmp < 0x80) { // volume slide up
-					currentEffect = 0x0A;
-					currentEffectParam = (tmp - 0x70);
-
-				} else if (tmp < 0x90) { // fine volume slide down
-					im.currentVolume -= (tmp - 0x80);
-				} else if (tmp < 0xa0) { // fine volume slide up
-					im.currentVolume += (tmp - 0x90);
-				} else if (tmp < 0xb0) { // vibrato speed
-				} else if (tmp < 0xc0) { // vibrato
-				} else if (tmp < 0xd0) { // set panning
-				} else if (tmp < 0xe0) { // panning slide left
-				} else if (tmp < 0xf0) { // panning slide right
-				} else if (tmp >= 0xf0) { // Tone porta
-				}
-			}
+			if ((check & 0x4) != 0) newVolume = pattern.data[patternpos++]&0xff;
 
 			// effect
-			if ((check & 0x8) != 0) {
-				currentEffect = pattern.data[patternpos++];
-				currentEffectParam = 0;
-			}
+			if ((check & 0x8) != 0)	newEffect = pattern.data[patternpos++];
 
 			// effect param
-			if ((check & 0x10) != 0) {
-				currentEffectParam = pattern.data[patternpos++]&0xff;
-				if (currentEffect == -1) currentEffect = 0;
-			}
+			if ((check & 0x10) != 0) newEffectParam = pattern.data[patternpos++]&0xff;
 		} else {
-			currentNote		= check;
-			im.setInstrument(xm.instrument[pattern.data[patternpos++] - 1]);
-			im.playNote(currentNote);
+			newNote			= check;
+			newInstrument		= xm.instrument[pattern.data[patternpos++] - 1];
+			newVolume		= pattern.data[patternpos++]&0xff;
+			newEffect		= pattern.data[patternpos++];
+			newEffectParam		= pattern.data[patternpos++]&0xff;
+		}
 
-			int tmp = pattern.data[patternpos++]&0xff;
-			if (tmp <= 0x50) { // volume
-				currentVolume = tmp;
-			} else if (tmp < 0x70) { // volume slide down
-				currentEffect = 0x0A;
-				currentEffectParam = (tmp - 0x60);
-			} else if (tmp < 0x80) { // volume slide up
-				currentEffect = 0x0A;
-				currentEffectParam = (tmp - 0x70);
-			} else if (tmp < 0x90) { // fine volume slide down
-				currentVolume -= (tmp - 0x80);
-			} else if (tmp < 0xa0) { // fine volume slide up
-				currentVolume += (tmp - 0x90);
-			} else if (tmp < 0xb0) { // vibrato speed
-			} else if (tmp < 0xc0) { // vibrato
-			} else if (tmp < 0xd0) { // set panning
-			} else if (tmp < 0xe0) { // panning slide left
-			} else if (tmp < 0xf0) { // panning slide right
-			} else if (tmp >= 0xf0) { // Tone porta
+		if (newInstrument != null) {
+			im.setInstrument(newInstrument);
+		}
+
+		currentEffect = -1;
+
+		if (newEffect != -1) {
+			if (newEffectParam == -1) newEffectParam = 0;
+
+			if (newEffectParam == 0) {
+effectLoop:
+				switch (newEffect) {
+					case 0x00: // Arpeggio
+					case 0x08: // Set panning
+					case 0x09: // Sample offset
+					case 0x0B: // Position jump
+					case 0x0C: // Set volume
+					case 0x0D: // Pattern break
+						currentEffectParam = newEffectParam;
+						break;
+					case 0xE: // Extended
+						int eff = (currentEffectParam >> 4) & 0xF;
+						switch (eff) {
+							case 0x01: // Fine porta up
+							case 0x02: // Fine porta down
+							case 0x0A: // Fine volume slide up
+							case 0x0B: // Fine volume slide down
+								break effectLoop;
+							default:
+								break;
+						}
+					case 0xF: // Set tempo/BPM
+					case 0x10: // Set global volume (Gxx)
+					case 0x15: // Set envelope position (Lxx)
+					case 0x1D: // Tremor (Txx)
+						currentEffectParam = newEffectParam;
+						break;
+					default: break;
+				}
+			} else {
+				currentEffectParam = newEffectParam;
 			}
-			currentEffect		= pattern.data[patternpos++];
-			currentEffectParam	= pattern.data[patternpos++]&0xff;
+/*
+			if (newEffect == 0x03) {
+				if (newNote != -1 && newNote != 97) {
+					portaNote = newNote;
+					//portaTarget = newNote - currentNote;
+					portaTarget = (int) (im.calcPitch(newNote) * 1024);
+				}
+//				System.out.println("target: " + portaTarget);
+				if (newNote != 97)
+					newNote = -1;
+//				porta = 0;
+//				newEffect = currentEffect = -1;
+			}
+*/
+			currentEffect = newEffect;
+		}
+
+		if (newNote != -1) {
+			if (newNote == 97) {
+				im.release();
+			} else {
+				porta = 0;
+				currentNote = newNote;
+				im.playNote(currentNote);
+			}
+		}
+
+
+		if (newVolume != -1) {
+			if (newVolume <= 0x50) { // volume
+				im.currentVolume = newVolume-10;
+			} else if (newVolume < 0x70) { // volume slide down
+//				currentEffect = 0x0A;
+//				currentEffectParam = (newVolume - 0x40);
+			} else if (newVolume < 0x80) { // volume slide up
+//				currentEffect = 0x0A;
+//				currentEffectParam = (newVolume - 0x70);
+			} else if (newVolume < 0x90) { // fine volume slide down
+				im.currentVolume -= (newVolume - 0x80);
+			} else if (newVolume < 0xa0) { // fine volume slide up
+				im.currentVolume += (newVolume - 0x90);
+			} else if (newVolume < 0xb0) { // vibrato speed
+			} else if (newVolume < 0xc0) { // vibrato
+			} else if (newVolume < 0xd0) { // set panning
+			} else if (newVolume < 0xe0) { // panning slide left
+			} else if (newVolume < 0xf0) { // panning slide right
+			} else if (newVolume >= 0xf0) { // Tone porta
+			}
 		}
 
 		return patternpos;
@@ -308,6 +323,9 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.12  2003/08/22 06:51:26  fredde
+ * 0xx,1xx,2xx,rxx implemented. update() from muhmu2-player
+ *
  * Revision 1.11  2003/08/21 09:25:35  fredde
  * moved instrument-playing from Channel into InstrumentManager
  *
