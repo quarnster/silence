@@ -26,7 +26,7 @@ import org.komplex .audio.PullAudioSource;
 /**
  * The basic class for AudioFormats
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.3 2000/08/25 17:37:33 quarn Exp $
+ * @version $Id: AudioFormat.java,v 1.4 2000/09/03 17:40:18 quarn Exp $
  */
 public abstract class AudioFormat implements PullAudioSource {
 
@@ -34,10 +34,13 @@ public abstract class AudioFormat implements PullAudioSource {
 	private static Hashtable flist = new Hashtable();
 
 	/** the samplerate for the device used */
-	protected int deviceSampleRate = 0;
+	public int deviceSampleRate = 0;
 
 	/** the volume */
 	protected double volume = 1;
+
+	/** play loud? */
+	protected boolean playLoud = true;
 
 	static {
 		// put all supported formats to the format list
@@ -90,6 +93,14 @@ public abstract class AudioFormat implements PullAudioSource {
 	 */
 	public void setSampleRate(int rate) {
 		deviceSampleRate = rate;
+		System.out.println("rate: " + rate);
+	}
+
+	/**
+	 * Wheter we will acctually play sounds or not
+	 */
+	public void setPlayLoud(boolean loud) {
+		playLoud = loud;
 	}
 
 	/**
@@ -103,6 +114,9 @@ public abstract class AudioFormat implements PullAudioSource {
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.4  2000/09/03 17:40:18  quarn
+ * added playLoud stuff
+ *
  * Revision 1.3  2000/08/25 17:37:33  quarn
  * added volume stuff
  *
