@@ -30,7 +30,7 @@ import com.jcraft.jorbis.*;
  * Original author: ymnk <ymnk@jcraft.com>
  *
  * @author Fredrik Ehnbom
- * @version $Id: Ogg.java,v 1.3 2001/01/08 19:49:35 fredde Exp $
+ * @version $Id: Ogg.java,v 1.4 2001/01/11 20:25:37 fredde Exp $
  */
 public class Ogg
 	extends AudioFormat
@@ -342,20 +342,29 @@ mainLoop:
 		return len;
 	}
 
-	public void close()
-		throws IOException
-	{
-		in.close();
+	public void close() {
+		try {
+			in.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
 	}
 
 	public void setDevice(org.komplex.audio.AudioOutDevice device) {
 		super.setDevice(device);
 		pitch = ((float) vi.rate / device.getSampleRate());
 	}
+
+	public String toString() {
+		return "Ogg Vorbis (JOrbis)";
+	}
 }
 /*
  * ChangeLog:
  * $Log: Ogg.java,v $
+ * Revision 1.4  2001/01/11 20:25:37  fredde
+ * added custom toString
+ *
  * Revision 1.3  2001/01/08 19:49:35  fredde
  * updated now that the AudioFormat just saves the device
  * instead of lots of data in different variables

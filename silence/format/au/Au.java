@@ -29,7 +29,7 @@ import org.komplex.audio.*;
  * can find at http://www.wotsit.org
  *
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.5 2001/01/08 19:49:35 fredde Exp $
+ * @version $Id: Au.java,v 1.6 2001/01/11 20:25:37 fredde Exp $
  */
 public class Au
 	extends AudioFormat
@@ -153,15 +153,24 @@ public class Au
 		pitch = device.getChannels() * ((double) this.samplerate / device.getSampleRate());
 	}
 
-	public void close()
-		throws IOException
-	{
-		in.close();
+	public void close() {
+		try {
+			in.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+
+	public String toString() {
+		return "AU";
 	}
 }
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.6  2001/01/11 20:25:37  fredde
+ * added custom toString
+ *
  * Revision 1.5  2001/01/08 19:49:35  fredde
  * updated now that the AudioFormat just saves the device
  * instead of lots of data in different variables

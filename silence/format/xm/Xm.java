@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.8 2001/01/08 19:49:35 fredde Exp $
+ * @version $Id: Xm.java,v 1.9 2001/01/11 20:25:37 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
@@ -70,9 +70,9 @@ public class Xm
 	public static final int make32Bit(byte[] b, int off) {
 		return (
 				((b[off + 0] & 0xff) << 0) +
-				((b[off + 1] & 0xff) * 256) +
-				((b[off + 2] & 0xff) * 256 * 256) +
-				((b[off + 3] & 0xff) * 256 * 256 * 256)
+				((b[off + 1] & 0xff) << 8) +
+				((b[off + 2] & 0xff) << 16) +
+				((b[off + 3] & 0xff) << 24)
 			);
 	}
 
@@ -83,7 +83,7 @@ public class Xm
 	public static final int make16Bit(byte[] b, int off) {
 		return (
 				((b[off + 0] & 0xff) << 0) +
-				((b[off + 1] & 0xff) * 256)
+				((b[off + 1] & 0xff) << 8)
 			);
 	}
 
@@ -253,10 +253,17 @@ public class Xm
 	}
 
 	public void close() {}
+
+	public String toString() {
+		return "Extended Module";
+	}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.9  2001/01/11 20:25:37  fredde
+ * added custom toString
+ *
  * Revision 1.8  2001/01/08 19:49:35  fredde
  * updated now that the AudioFormat just saves the device
  * instead of lots of data in different variables
