@@ -29,7 +29,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.4 2001/01/11 20:23:23 fredde Exp $
+ * @version $Id: Silence.java,v 1.5 2001/01/27 18:17:02 fredde Exp $
  */
 public class Silence
 	implements AudioConstants
@@ -65,7 +65,7 @@ public class Silence
 	public void init()
 		throws AudioException
 	{
-		init(FORMAT_PCM44K16S, true, null);
+		init(FORMAT_PCM44K16S, null);
 	}
 
 	/**
@@ -77,39 +77,20 @@ public class Silence
 	public void init(int soundFormat)
 		throws AudioException
 	{
-		init(soundFormat, true, null);
+		init(soundFormat, null);
 	}
 
 	/**
 	 * Tries to load and init an audiodevice.
 	 *
 	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
-	 * @param sound Wheter we want sound output or not (sound or nosound mode)
-	 * @exception AudioException If a device could not be found
-	 */
-	public void init(int soundFormat, boolean sound)
-		throws AudioException
-	{
-		init(soundFormat, sound, null);
-	}
-
-	/**
-	 * Tries to load and init an audiodevice.
-	 *
-	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
-	 * @param sound	Wheter we want sound output or not (sound or nosound mode)
 	 * @param comp Directsound requires a component reference
 	 * @exception AudioException If a device could not be found
 	 */
-	public void init(int soundFormat, boolean sound, Component comp)
+	public void init(int soundFormat, Component comp)
 		throws AudioException
 	{
 		AudioOutDeviceFactory factory = new AudioOutDeviceFactory();
-
-		if (sound == false) {
-			String[] args = {"-nosound"};
-			factory.initArgs(args);
-		}
 
 		while (device == null) {
 			try {
@@ -216,6 +197,9 @@ public class Silence
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.5  2001/01/27 18:17:02  fredde
+ * removed that ridiculous nosound mode
+ *
  * Revision 1.4  2001/01/11 20:23:23  fredde
  * Added getDevice method
  *
