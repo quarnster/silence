@@ -23,7 +23,7 @@ import java.io.*;
  * Stores sample data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.3 2000/10/07 13:52:46 fredde Exp $
+ * @version $Id: Sample.java,v 1.4 2000/10/12 15:06:28 fredde Exp $
  */
 class Sample {
 	private int sampleLength = 0;
@@ -35,7 +35,7 @@ class Sample {
 
 	int relativeNote = 0;
 	int fineTune = 0;
-	byte[] sampleData;
+	int[] sampleData;
 	int	volume;
 
 
@@ -76,7 +76,6 @@ class Sample {
 		// Finetune (signend byte -128...+127)
 		fineTune = in.read();
 		if (fineTune > 127) fineTune -= 256;
-		System.out.println("fineTune: " + fineTune);
 
 		// Type: Bit 0-1: 0 = No loop,
 		//                1 = Forward loop,
@@ -84,7 +83,6 @@ class Sample {
 		//                4: 16-bit sampledata
 		loopType = in.read();
 		sampleQuality = ((int) loopType & 0x10) != 0 ? 16 : 8;
-		System.out.println("looptype: " + ((loopType & 0x1) != 0 ? "forward loop" : (loopType & 0x2) != 0 ? "pingpong" : "noloop"));
 
 		// Panning (0-255)
 		in.read();
@@ -92,7 +90,6 @@ class Sample {
 		// Relative note number (signed byte)
 		relativeNote = in.read();
 		if (relativeNote > 95) relativeNote -= 256;
-		System.out.println("relativeNote: " + relativeNote);
 
 		// Reserved
 		in.read();
@@ -107,50 +104,34 @@ class Sample {
 		if (sampleQuality == 16) {
 			// TODO: fix...
 			sampleLength >>= 1;
+			loopEnd >>= 1;
+			loopStart >>= 1;
+
 			byte[] temp = Xm.read(in, 2 * sampleLength);
-			sampleData = new byte[sampleLength];
-
-			for (int i = 0; i < temp.length - 1; i++) {
-				byte tmp = temp[i];
-				temp[i] = temp[i + 1];
-				temp[i + 1] = tmp;
-			}
-
-/*
-			int p = 0;
-			int old = 0;
-
-			for (int i = 0; i < temp.length; i++) {
-				p = ((int) temp[i]) + old;
-				temp[i] = (byte) p;
-				old = p;
-			}
-*/
+			sampleData = new int[sampleLength];
 
 			int tmpPos = 0;
-			for (int i = 0; i < sampleData.length; i++) {
-				sampleData[i] = (byte) (temp[tmpPos++] + temp[tmpPos++] >> 8);
-			}
-
-			int p = 0;
-			int old = 0;
 
 			for (int i = 0; i < sampleData.length; i++) {
-				p = sampleData[i] + old;
-				sampleData[i] = (byte) p;
-				old = p;
+				sampleData[i] = (temp[tmpPos++]); // < 0 ? temp[tmpPos] + 256 : temp[tmpPos]);
+				sampleData[i] += (temp[tmpPos++]) << 8;
 			}
 
+			int samp = 0;
+
+			for (int i = 0; i < sampleData.length; i++) {
+				samp += sampleData[i];
+				sampleData[i] = samp;
+			}
 		} else {
-			sampleData = Xm.read(in, sampleLength);
+			byte[] temp = Xm.read(in, sampleLength);
+			sampleData = new int[sampleLength];
 
-			int p = 0;
-			int old = 0;
+			int samp = 0;
 
 			for (int i = 0; i < sampleData.length; i++) {
-				p = ((int) sampleData[i]) + old;
-				sampleData[i] = (byte) p;
-				old = p;
+				samp += temp[i];
+				sampleData[i] = (int) ((byte) samp) << 8;
 			}
 
 		}
@@ -159,6 +140,10 @@ class Sample {
 /*
  * ChangeLog:
  * $Log: Sample.java,v $
+ * Revision 1.4  2000/10/12 15:06:28  fredde
+ * made sampleData to an int[], 16-bit samples works
+ * better but still not good.
+ *
  * Revision 1.3  2000/10/07 13:52:46  fredde
  * Fixed to read in correctly.
  * Finetunes and relativenotes are working now.
