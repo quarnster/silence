@@ -22,16 +22,16 @@ import java.io.*;
 /**
  * Stores sample data
  * @author Fredrik Ehnbom
- * @version $Id: Sample.java,v 1.1 2000/06/07 13:28:15 quarn Exp $
+ * @version $Id: Sample.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
  */
-public class Sample {
+class Sample {
 
 	private int samplelength = 0;
 	private int looptype = 0;
 	private int samplequality = 0;
 	private int relativenote = 0;
 	private int finetune = 0;
-	private byte[] sampleData;
+	protected byte[] sampleData;
 
 
 	public Sample(BufferedInputStream in) throws IOException {
@@ -95,9 +95,9 @@ public class Sample {
 		int old = 0;
 
 		for(int i = 0; i < sampleData.length; i++) {
-			p = ((int) sampleData[i])+old;
-			sampleData[i]= (byte) p;
-			old=p;
+			p = ((int) sampleData[i]) + old;
+			sampleData[i] = (byte) p;
+			old = p;
 		}
 	}
 }

@@ -20,12 +20,14 @@ package silence.format.xm;
 import java.io.*;
 import java.net.URL;
 
+import org.komplex.audio.PullAudioSource;
+
 /**
  * The general xm class
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.1 2000/06/07 13:28:15 quarn Exp $
+ * @version $Id: Xm.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
  */
-public class Xm {
+public class Xm implements PullAudioSource {
 
 	private String title = "";
 	private String tracker = "";
@@ -34,19 +36,28 @@ public class Xm {
 	private int patorder[];
 	private int instrnum = 0;
 	private int channels = 0;
+	private Pattern[] pattern;
+	private Instrument[] instrument;
 
+	/**
+	 * Creates a new XM-player. Do <strong>not</strong> buffer the InputStream, we will
+	 * do that for you.
+	 * @param is The InputStream to read the file from
+	 */
 	public Xm(InputStream is) throws IOException {
-
 		BufferedInputStream in = new BufferedInputStream(is);
 
 		readGeneralInfo(in);
 
+		pattern = new Pattern[patnum];
+		instrument = new Instrument[instrnum];
+
 		for (int i = 0; i < patnum; i++) {
-			new Pattern(channels, in);
+			pattern[i] = new Pattern(channels, in);
 		}
 
 		for (int i = 0; i < instrnum; i++) {
-			new Instrument(in);
+			instrument[i] = new Instrument(in);
 		}
 		in.close();
 	}
@@ -143,22 +154,23 @@ public class Xm {
 			patorder[i] = b[i];
 		}
 		System.out.println();
-
 	}
 
-	public static void main(String args[]) {
+	/**
+	 * Play...
+	 */
+	public int read(int[] buffer, int off, int len) {
+		// do lots of stuff...
 
-		try {
-			URL u = new URL(args[0]);
-			Xm xm = new Xm(u.openStream());
-		} catch (IOException ioe) {
-			System.err.println(ioe);
-		}
+		return len;
 	}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.2  2000/06/08 16:29:30  quarn
+ * fixed/updated/etc...
+ *
  * Revision 1.1  2000/06/07 13:28:15  quarn
  * files for the xm sound format
  *

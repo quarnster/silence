@@ -22,12 +22,11 @@ import java.io.*;
 /**
  * This class stores information about an instrument
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.1 2000/06/07 13:28:15 quarn Exp $
+ * @version $Id: Instrument.java,v 1.2 2000/06/08 16:29:30 quarn Exp $
  */
-public class Instrument {
+class Instrument {
 
-	Sample sample[];
-	int samples = 0;
+	protected Sample sample[];
 
 	public Instrument(BufferedInputStream in) throws IOException {
 
@@ -43,19 +42,19 @@ public class Instrument {
 
 		// Instrument type (always 0)
 		// Note: not always 0 but it says so in the documents...
-		int type = in.read();
+		in.read();
 
 		// Number of samples in instrument
 		b = new byte[2];
 		in.read(b);
-		samples = b[0];
+		sample = new Sample[b[0]];
 
-		// Seems like there is four extra bytes to read here
+		// Seems like it is four extra bytes to read here
 		if (size > 0) {
 			for (int i = 0; i < 4; i++) in.read();
 		}
 
-		if (samples > 0) {
+		if (sample.length > 0) {
 			// Sample header size
 			b = new byte[4];
 			in.read(b);
@@ -122,12 +121,10 @@ public class Instrument {
 			b = new byte[22];
 			in.read(b);
 
-			sample = new Sample[samples];
-
-			for (int i = 0; i < samples; i++) {
+			for (int i = 0; i < sample.length; i++) {
 				sample[i] = new Sample(in);
 			}
-			for (int i = 0; i < samples; i++) {
+			for (int i = 0; i < sample.length; i++) {
 				sample[i].readData(in);
 			}
 		}
@@ -136,6 +133,9 @@ public class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
+ * Revision 1.2  2000/06/08 16:29:30  quarn
+ * fixed/updated/etc...
+ *
  * Revision 1.1  2000/06/07 13:28:15  quarn
  * files for the xm sound format
  *
