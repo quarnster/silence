@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.7 2000/10/14 19:09:04 fredde Exp $
+ * @version $Id: Channel.java,v 1.8 2000/12/21 17:19:59 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -40,6 +40,7 @@ class Channel {
 	double		currentLoopLen		= 0;
 
 	boolean		useVolEnv			= false;
+	boolean		sustain			= false;
 	float			volEnvK			= 0;
 	float			volEnv			= 64;
 	int			volEnvLoopLen		= 0;
@@ -56,46 +57,32 @@ class Channel {
 		if (currentInstrument.sample.length == 0) return 0;
 		note += currentInstrument.sample[0].relativeNote - 1;
 
-		double period = 10*12*16*4 - note*16*4 - ((double) currentInstrument.sample[0].fineTune / 2);
-		double freq = 8363 * Math.pow(2, ((6 * 12 * 16 * 4 - period) / (12 * 16 * 4)));
+		int period = (10*12*16*4) - (note*16*4) - (currentInstrument.sample[0].fineTune / 2);
 
-		return  freq  / xm.deviceSampleRate;
-	}
+		double freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
+		double pitch = freq  / (double) xm.deviceSampleRate;
 
-	private final float calcK() {
-		volEnvLength =	(
-						currentInstrument.volumeEnvelopePoints[volEnvPos + 2] -
-		 				currentInstrument.volumeEnvelopePoints[volEnvPos + 0]
-					);
-
-		return
-			(float) (
-				currentInstrument.volumeEnvelopePoints[volEnvPos + 1] -
-				currentInstrument.volumeEnvelopePoints[volEnvPos + 3]
-			) /
-			(float) (
-				currentInstrument.volumeEnvelopePoints[volEnvPos + 0] -
-				currentInstrument.volumeEnvelopePoints[volEnvPos + 2]
-			);
+		return  pitch;
 	}
 
 	private final void updateEffects() {
-		if (currentEffect == -1) return;
 		switch (currentEffect) {
-			case 0x0F:	// set tempo
-				if (currentEffectParam > 0x20) {
-					xm.defaultBpm = currentEffectParam;
-					xm.samplesPerTick = (5 * xm.deviceSampleRate) / (2 * xm.defaultBpm);
-				} else {
-					xm.defaultTempo = currentEffectParam;
-					xm.tempo = xm.defaultTempo;
-				}
-				currentEffect = -1;
+			case 0x0A: // Volume slide
+				currentVolume += (currentEffectParam & 0xF0) != 0 ?
+							 (currentEffectParam >> 4) & 0xF :
+							-(currentEffectParam & 0xF);
+
+				currentVolume = currentVolume < 0 ? 0 : currentVolume > 64 ? 64 : currentVolume;
+				rowVol = (( currentVolume / 64f) * 32f);
+
+				if (currentVolume == 0 && (currentEffectParam & 0xF0) == 0) currentEffect = -1;
 				break;
-			case 0x11: // global volume slide
-				xm.globalVolume += (currentEffectParam & 0xF0) != 0 ?
-						(currentEffectParam >> 4) & 0xF :
-						-(currentEffectParam & 0xF);
+			case 0x0C: // set volume
+				currentVolume = currentEffectParam;
+				currentEffect = -1;
+				rowVol = (((float) currentVolume / 64) * 32f);
+				if (currentInstrument != null) rowVol *= ((float) currentInstrument.sample[0].volume / 64);
+
 				break;
 			case 0x0E: // extended MOD commands
 				int eff = (currentEffectParam >> 4) & 0xF;
@@ -106,6 +93,31 @@ class Channel {
 						currentEffectParam = (eff << 4) + (currentEffectParam & 0xF) - 1;
 					}
 				}
+				break;
+			case 0x0F:	// set tempo
+				if (currentEffectParam > 0x20) {
+					xm.defaultBpm = currentEffectParam;
+					xm.samplesPerTick = (5 * xm.deviceSampleRate) / (2 * xm.defaultBpm);
+				} else {
+					xm.defaultTempo = currentEffectParam;
+					xm.tempo = xm.defaultTempo;
+				}
+				currentEffect = -1;
+				break;
+			case 0x10: // set global volume (Gxx)
+				xm.globalVolume = currentEffectParam;
+				currentEffect = -1;
+				break;
+			case 0x11: // global volume slide (Hxx)
+				if (xm.tempo + 1 == xm.defaultTempo) return;
+				if (xm.tempo <= 1) currentEffect = -1;
+
+				xm.globalVolume += (currentEffectParam & 0xF0) != 0 ?
+						(currentEffectParam >> 4) & 0xF :
+						-(currentEffectParam & 0xF);
+				break;
+			default: // unknown effect
+				currentEffect = -1;
 				break;
 		}
 	}
@@ -121,20 +133,23 @@ class Channel {
 				return;
 			}
 		}
+		finalVol *= (volEnv / 64);
+		if (xm.globalVolume != 64) finalVol *= ((double) xm.globalVolume / 64);
 
 		if (useVolEnv) {
 			if (currentNote == 97) {
+				volEnv += volEnvK;
 				if (volEnvLength <= 0) {
-					volEnvPos += 2;
-					volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos + 1];
+					volEnvPos++;
 
 					if (volEnvPos == volEnvLoopLen) {
 						if ((volEnvType & 0x4) != 0) {
-							volEnvPos = currentInstrument.volLoopStart * 2;
-							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos + 1];
-							volEnvLoopLen = currentInstrument.volLoopEnd * 2;
-							volEnvK = calcK();
+							volEnvPos = currentInstrument.volLoopStart;
+							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
+							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
+							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
 						} else {
+							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
 							volEnvK = 0;
 							useVolEnv = false;
 							if (volEnv <= 1) {
@@ -143,48 +158,46 @@ class Channel {
 							}
 						}
 					} else {
-						volEnvK = calcK();
+						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
+						volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
+						volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
 					}
-				} else if (volEnvK == 0 && (volEnvPos == (volEnvSustain*2) && (volEnvType & 0x2) != 0)) {
-					volEnvK = calcK();
 				}
 				volEnvLength--;
-			} else if  (!(volEnvPos == (volEnvSustain*2) && (volEnvType & 0x2) != 0) && volEnvLength <= 0) {
-				volEnvPos += 2;
-				volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos + 1];
+			} else if (!sustain) { // note != 97
+				volEnv += volEnvK;
+				if  (volEnvLength <= 0) {
+					volEnvPos++;
 
-				if (volEnvPos == volEnvLoopLen) {
-					if ((volEnvType & 0x4) != 0) {
-						volEnvPos = currentInstrument.volLoopStart * 2;
-						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos + 1];
-						volEnvLoopLen = currentInstrument.volLoopEnd * 2;
-						volEnvK = calcK();
-					} else {
-						volEnvK = 0;
-						useVolEnv = false;
-						if (volEnv <= 1) {
-							currentInstrument = null;
-							return;
+					if ((volEnvPos == volEnvSustain && (volEnvType & 0x2) != 0)) {
+						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
+						volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
+						volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
+						sustain = true;
+					} else if (volEnvPos == volEnvLoopLen) {
+						if ((volEnvType & 0x4) != 0) { // loop
+							volEnvPos = currentInstrument.volLoopStart;
+							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
+							volEnvLoopLen = currentInstrument.volLoopEnd;
+							volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
+							volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
+						} else {
+							volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
+							volEnvK = 0;
+							useVolEnv = false;
 						}
+					} else {
+						volEnv = currentInstrument.volumeEnvelopePoints[volEnvPos].y;
+						volEnvK = currentInstrument.volumeEnvInfo[volEnvPos].y;
+						volEnvLength = (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
 					}
-				} else {
-					volEnvK = calcK();
 				}
-			} else if ((volEnvPos == (volEnvSustain*2) && (volEnvType & 0x2) != 0)) {
-				volEnvK = 0;
-			}
-
-			if (currentNote != 97 && !(volEnvPos == (volEnvSustain*2) && (volEnvType & 0x2) != 0)) {
 				volEnvLength--;
-			}
-
-			volEnv += volEnvK;
+			} 
 		} else if (currentNote == 97) {
 			currentInstrument = null;
 			return;
 		}
-		if (volEnv != 64) finalVol *= (volEnv / 64);
-		if (xm.globalVolume != 64) finalVol *= ((double) xm.globalVolume / 64);
 	}
 
 	final int skip(Pattern pattern, int patternpos) {
@@ -213,6 +226,7 @@ class Channel {
 
 			// instrument
 			if ((check & 0x2) != 0) {
+				currentEffect = -1;
 				currentInstrument	= xm.instrument[pattern.data[patternpos++] - 1];
 				currentLoopLen		= currentInstrument.sample[0].sampleData.length - 1;
 				currentPitch		= calcPitch(currentNote);
@@ -221,27 +235,53 @@ class Channel {
 				fadeOutVol			= 65536;
 
 				if (currentInstrument.volumeEnvelopePoints.length != 0) {
-					volEnv		= currentInstrument.volumeEnvelopePoints[1];
+					volEnv		= currentInstrument.volumeEnvelopePoints[0].y;
 					volEnvPos		= 0;
-					volEnvK		= calcK();
+					volEnvK		= currentInstrument.volumeEnvInfo[volEnvPos].y;
+					volEnvLength	= (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
 					volEnvSustain	= currentInstrument.volSustain;
 					volEnvType		= currentInstrument.volType;
 					useVolEnv		= ((volEnvType & 0x1) != 0);
+
 					if ((volEnvType & 0x4) != 0)
-						volEnvLoopLen = currentInstrument.volLoopEnd * 2;
+						volEnvLoopLen = currentInstrument.volLoopEnd;
 					else
-						volEnvLoopLen = currentInstrument.volumeEnvelopePoints.length - 2;
+						volEnvLoopLen = currentInstrument.volumeEnvelopePoints.length - 1;
+					sustain = (volEnvPos == volEnvSustain && (volEnvType & 0x2) != 0);
 				} else {
 					useVolEnv	= false;
 					volEnv	= 64;
 					volEnvK	= 0;
 					volEnvPos	= 0;
 				}
+				if (currentInstrument.sample.length == 0) currentInstrument = null;
 			}
 
 			// volume
-			if ((check & 0x4) != 0)
-				currentVolume = pattern.data[patternpos++];
+			if ((check & 0x4) != 0) {
+				int tmp = pattern.data[patternpos++]&0xff;
+
+				if (tmp <= 0x50) { // volume
+					currentVolume = tmp-1;
+				} else if (tmp < 0x70) { // volume slide down
+					currentEffect = 0x0A;
+					currentEffectParam = (tmp - 0x40);
+				} else if (tmp < 0x80) { // volume slide up
+					currentEffect = 0x0A;
+					currentEffectParam = (tmp - 0x70) * 16;
+
+				} else if (tmp < 0x90) { // fine volume slide down
+					currentVolume -= (tmp - 0x80);
+				} else if (tmp < 0xa0) { // fine volume slide up
+					currentVolume += (tmp - 0x90);
+				} else if (tmp < 0xb0) { // vibrato speed
+				} else if (tmp < 0xc0) { // vibrato
+				} else if (tmp < 0xd0) { // set panning
+				} else if (tmp < 0xe0) { // panning slide left
+				} else if (tmp < 0xf0) { // panning slide right
+				} else if (tmp >= 0xf0) { // Tone porta
+				}
+			}
 
 			// effect
 			if ((check & 0x8) != 0)
@@ -249,29 +289,51 @@ class Channel {
 
 			// effect param
 			if ((check & 0x10) != 0)
-				currentEffectParam = pattern.data[patternpos++];
-			else
-				currentEffectParam = 0;
+				currentEffectParam = pattern.data[patternpos++]&0xff;
 		} else {
 			currentNote			= check;
 			currentInstrument	= xm.instrument[pattern.data[patternpos++] - 1];
 			currentLoopLen		= currentInstrument.sample[0].sampleData.length - 1;
-			currentVolume		= pattern.data[patternpos++];
+			currentVolume		= 64;
+
+			int tmp = pattern.data[patternpos++]&0xff;
+			if (tmp <= 0x50) { // volume
+				currentVolume = tmp;
+			} else if (tmp < 0x70) { // volume slide down
+				currentEffect = 0x0A;
+				currentEffectParam = (tmp - 0x60);
+			} else if (tmp < 0x80) { // volume slide up
+				currentEffect = 0x0A;
+				currentEffectParam = (tmp - 0x70) * 16;
+			} else if (tmp < 0x90) { // fine volume slide down
+				currentVolume -= (tmp - 0x80);
+			} else if (tmp < 0xa0) { // fine volume slide up
+				currentVolume += (tmp - 0x90);
+			} else if (tmp < 0xb0) { // vibrato speed
+			} else if (tmp < 0xc0) { // vibrato
+			} else if (tmp < 0xd0) { // set panning
+			} else if (tmp < 0xe0) { // panning slide left
+			} else if (tmp < 0xf0) { // panning slide right
+			} else if (tmp >= 0xf0) { // Tone porta
+			}
 			currentEffect		= pattern.data[patternpos++];
-			currentEffectParam	= pattern.data[patternpos++];
+			currentEffectParam	= pattern.data[patternpos++]&0xff;
 			fadeOutVol			= 65536;
 
 			if (currentInstrument.volumeEnvelopePoints.length != 0) {
-				volEnv		= currentInstrument.volumeEnvelopePoints[1];
+				volEnv		= currentInstrument.volumeEnvelopePoints[0].y;
 				volEnvPos		= 0;
-				volEnvK		= calcK();
+				volEnvK		= currentInstrument.volumeEnvInfo[volEnvPos].y;
+				volEnvLength	= (int) currentInstrument.volumeEnvInfo[volEnvPos].x;
 				volEnvSustain	= currentInstrument.volSustain;
 				volEnvType		= currentInstrument.volType;
+
 				if ((volEnvType & 0x4) != 0)
-					volEnvLoopLen = currentInstrument.volLoopEnd * 2;
+					volEnvLoopLen = currentInstrument.volLoopEnd;
 				else
-					volEnvLoopLen = currentInstrument.volumeEnvelopePoints.length - 2;
+					volEnvLoopLen = currentInstrument.volumeEnvelopePoints.length - 1;
 				useVolEnv		= ((volEnvType & 0x1) != 0);
+				sustain = (volEnvPos == volEnvSustain && (volEnvType & 0x2) != 0);
 			} else {
 				useVolEnv	= false;
 				volEnv	= 64;
@@ -282,9 +344,9 @@ class Channel {
 			currentPitch = calcPitch(currentNote);
 			currentPos = 0;
 		}
-		if (currentEffectParam < 0) currentEffectParam = 256 + currentEffectParam;
 
-		rowVol = (((float) currentVolume / 64) * 32f);
+		rowVol = (( currentVolume / 64f) * 32f);
+		if (currentInstrument != null) rowVol *= (currentInstrument.sample[0].volume / 64f);
 
 		return patternpos;
 	}
@@ -295,14 +357,12 @@ class Channel {
 	}
 
 	final void play(int[] buffer, int off, int len) {
-		if (currentNote == 0 || currentInstrument == null || currentInstrument.sample.length == 0) return;
+		if (currentInstrument == null || finalVol < 1 || currentNote == 0) return;
 
 		for (int i = off; i < off+len; i++) {
 			int sample = (int) (currentInstrument.sample[0].sampleData[(int) currentPos] * finalVol);
 			buffer[i] += (sample & 65535) | (sample << 16);
 
-			switch (currentEffect) {
-			}
 			currentPos += currentPitch;
 			currentLoopLen += (currentPitch < 0) ? currentPitch : -currentPitch;
 
@@ -310,8 +370,13 @@ class Channel {
 				if ((currentInstrument.sample[0].loopType & 0x2) != 0) {
 					// pingpong loop
 					currentPitch = -currentPitch;
-					currentPos += currentPitch;
-					currentLoopLen = currentInstrument.sample[0].sampleData.length - 1;
+
+					if (currentPitch < 0) {
+						currentPos = currentInstrument.sample[0].loopStart + currentInstrument.sample[0].loopEnd-1;
+					} else {
+						currentPos = currentInstrument.sample[0].loopStart;
+					}
+					currentLoopLen = currentInstrument.sample[0].loopEnd;
 				} else if ((currentInstrument.sample[0].loopType & 0x1) != 0) {
 					// forward loop
 					currentPos = currentInstrument.sample[0].loopStart;
@@ -329,6 +394,10 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.8  2000/12/21 17:19:59  fredde
+ * volumeenvelopes works better, uses precalced k-values,
+ * pingpong loop fixed
+ *
  * Revision 1.7  2000/10/14 19:09:04  fredde
  * changed volume stuff back to 32 since
  * sampleData is of type byte[] again
