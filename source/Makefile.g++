@@ -4,7 +4,6 @@ JAVAFLAGS = -g -deprecation
 JAVADIR = /usr/local/jdk1.2.2
 MIDASDIR = /usr/local/src/midas-1.1.2
 
-CLIB = libmidasglue.so
 CC = g++
 CFLAGS = --shared -ggdb -Wall -I$(JAVADIR)/include -I$(JAVADIR)/include/linux -I$(MIDASDIR)/include -L$(MIDASDIR)/lib/linux/gcdebug
 
@@ -16,7 +15,9 @@ CLASSES = silence/AudioException.class \
 	silence/devices/midas/MidasDevice.class \
 	silence/devices/midas/MidasException.class \
 	silence/devices/fmod/FmodDevice.class \
-	silence/devices/fmod/FmodException.class
+	silence/devices/fmod/FmodException.class \
+	silence/devices/bass/BassDevice.class \
+	silence/devices/bass/BassException.class
 
 XM = 	silence/format/xm/Pattern.class \
 	silence/format/xm/Sample.class \
@@ -42,6 +43,7 @@ clean:
 	rm -f silence/devices/*.class
 	rm -f silence/devices/midas/*.class
 	rm -f silence/devices/fmod/*.class
+	rm -f silence/devices/bass/*.class
 	rm -f silence/format/xm/*.class
 	rm -f *.so 
 	rm -f *.jar
@@ -55,4 +57,4 @@ jar:
 	silence/devices/fmod/*.class
 
 midaslib:
-	$(CC) $(CFLAGS) silence/devices/midas/midas.c -lmidas -o $(CLIB)
+	$(CC) $(CFLAGS) silence/devices/midas/midas.c -lmidas -o libmidasglue.so

@@ -1,9 +1,14 @@
-Fredrik Ehnbom <quarn@users.sourceforge.net>
+
+Fredrik Ehnbom <quarn@telia.com>
 
 
+silence uses MuhmuAudio, FMOD, Midas and BASS.
+MuhmuAudio:	http://muhmuaudio.sourceforge.net
+FMOD:  		http://www.fmod.org
+Midas: 		http://www.s2.org/midas
+BASS:  		http://www.un4seen.com/music/
 
-For information about FMOD visit http://www.fmod.org
-For information about Midas visit http://www.s2.org/midas
-
+MuhmuAudio is Copyright (c) 2000 Jarno Heikkinen
 FMOD is Copyright (c) 1999-2000 FireLight Multimedia
 Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.
+BASS is Copyright (c) 1999-2000 Ian Luck. All rights reserved.
