@@ -23,19 +23,19 @@ import silence.AudioException;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.3 2000/04/30 13:17:51 quarn Exp $
  */
 public interface AudioDevice {
 
 	/**
 	 * Init the AudioDevice
 	 */
-	public void init(String file, boolean nosound) throws AudioException;
+	public void init(boolean nosound) throws AudioException;
 
 	/**
 	 * Start playing the file
 	 */
-	public void play() throws AudioException;
+	public void play(String file, boolean loop) throws AudioException;
 
 	/**
 	 * Stop playing the file
@@ -60,6 +60,9 @@ public interface AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.3  2000/04/30 13:17:51  quarn
+ * choose which file to play in the play method instead of init
+ *
  * Revision 1.2  2000/04/29 10:33:52  quarn
  * drats! Wrote  instead of ...
  *

@@ -23,7 +23,7 @@ import silence.devices.AudioDevice;
 /**
  * An audio device which uses midas
  * @author Fredrik Ehnbom
- * @version $Id: MidasDevice.java,v 1.2 2000/04/29 10:33:52 quarn Exp $
+ * @version $Id: MidasDevice.java,v 1.3 2000/04/30 13:19:03 quarn Exp $
  */
 public class MidasDevice implements AudioDevice, Runnable {
 
@@ -40,12 +40,12 @@ public class MidasDevice implements AudioDevice, Runnable {
 	/**
 	 * Initialize the device
 	 */
-	public native void init(String file, boolean nosound) throws MidasException;
+	public native void init(boolean sound) throws MidasException;
 
 	/**
 	 * The native play function
 	 */
-	public native void Nplay() throws MidasException;
+	public native void Nplay(String file, boolean loop) throws MidasException;
 
 	/**
 	 * The native stop function
@@ -91,13 +91,13 @@ public class MidasDevice implements AudioDevice, Runnable {
 	/**
 	 * Starts playing the file
 	 */
-	public void play() throws MidasException {
-		Nplay();
+	public void play(String file, boolean loop) throws MidasException {
+		Nplay(file, loop);
 
 		if (t == null) {
 			t = new Thread(this);
+			t.start();
 		}
-		t.start();
 	}
 
 	/**
@@ -119,6 +119,9 @@ public class MidasDevice implements AudioDevice, Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
+ * Revision 1.3  2000/04/30 13:19:03  quarn
+ * choose which file to play in the play method instead of init
+ *
  * Revision 1.2  2000/04/29 10:33:52  quarn
  * drats! Wrote  instead of ...
  *

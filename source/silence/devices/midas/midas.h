@@ -18,18 +18,18 @@ JNIEXPORT jint JNICALL Java_silence_devices_midas_MidasDevice_synced
 /*
  * Class:     silence_devices_midas_MidasDevice
  * Method:    init
- * Signature: (Ljava/lang/String;Z)V
+ * Signature: (Z)V
  */
 JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init
-  (JNIEnv *, jobject, jstring, jboolean);
+  (JNIEnv *, jobject, jboolean);
 
 /*
  * Class:     silence_devices_midas_MidasDevice
  * Method:    Nplay
- * Signature: ()V
+ * Signature: (Ljava/lang/String;Z)V
  */
 JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_Nplay
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jstring, jboolean);
 
 /*
  * Class:     silence_devices_midas_MidasDevice

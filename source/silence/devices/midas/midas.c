@@ -27,12 +27,10 @@ JNIEXPORT jint JNICALL Java_silence_devices_midas_MidasDevice_synced(JNIEnv* jne
 	}
 }
 
-JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init(JNIEnv* jne, jobject obj, jstring mod, jboolean sound) {
-	char *str = (char *)jne->GetStringUTFChars(mod, 0);
+JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init(JNIEnv* jne, jobject obj, jboolean sound) {
 	jclass MidasException = jne->FindClass("silence/devices/midas/MidasException");
 
 	if ( !MIDASstartup() ) {
-		jne->ReleaseStringUTFChars(mod, str);
 		jne->ThrowNew(MidasException, Error());
 		return;
 	}
@@ -41,10 +39,16 @@ JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init(JNIEnv* jne, 
 		MIDASsetOption(MIDAS_OPTION_FORCE_NO_SOUND, 1);
 
 	if ( !MIDASinit() ) {
-		jne->ReleaseStringUTFChars(mod, str);
 		jne->ThrowNew(MidasException, Error());
 		return;
 	}
+}
+
+JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_Nplay(JNIEnv* jne, jobject obj, jstring mod, jboolean loop) {
+	jclass MidasException = jne->FindClass("silence/devices/midas/MidasException");
+	char *str = (char *)jne->GetStringUTFChars(mod, 0);
+
+	if (module != NULL) return;
 
 	if ( !(module = MIDASloadModule(str)) ) {
 		jne->ReleaseStringUTFChars(mod, str);
@@ -54,26 +58,25 @@ JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init(JNIEnv* jne, 
 
 	jne->ReleaseStringUTFChars(mod, str);
 
-	if ( !(handle = MIDASplayModule(module, FALSE)) ) {
+	if ( !(handle = MIDASplayModule(module, (loop == JNI_TRUE))) ) {
 		jne->ThrowNew(MidasException, Error());
 		return;
 	}
-}
-
-JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_Nplay(JNIEnv* env, jobject obj) {
-	jclass SoundException = env->FindClass("silence/devices/midas/MidasException");
 
 	MIDASsetMusicSyncCallback (handle, syncCallback);
 	if ( !MIDASstartBackgroundPlay(0) )
-		env->ThrowNew(SoundException, Error());
+		jne->ThrowNew(MidasException, Error());
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_Nstop(JNIEnv*, jobject) {
-	MIDASstopBackgroundPlay();
-	MIDASstopModule(handle);
+	if (module != NULL) {
+		MIDASstopBackgroundPlay();
+		MIDASstopModule(handle);
+		MIDASfreeModule(module);
+		module = NULL;
+	}
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_close(JNIEnv *, jobject) {
-	MIDASfreeModule(module);
 	MIDASclose();
 }
