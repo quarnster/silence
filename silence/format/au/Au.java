@@ -25,11 +25,11 @@ import org.komplex.audio.*;
 
 /**
  * A class for loading and playing .au-files.
- * Information taken from au.txt which you
+ * Information is taken from au.txt which you
  * can find at http://www.wotsit.org
  * 
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.1 2000/09/25 16:34:34 fredde Exp $
+ * @version $Id: Au.java,v 1.2 2000/09/29 19:39:22 fredde Exp $
  */
 public class Au
 	extends AudioFormat
@@ -126,7 +126,6 @@ public class Au
 		if (!playLoud) return len;
 		for (int i = off; i < len; i++) {
 			int currsamp = sampledata[(int) samppos];
-			currsamp *= volume;
 
 			buffer[i] = (currsamp & 65535) | (currsamp << 16);
 			samppos += pitch;
@@ -143,7 +142,10 @@ public class Au
 /*
  * ChangeLog:
  * $Log: Au.java,v $
- * Revision 1.1  2000/09/25 16:34:34  fredde
- * Initial revision
+ * Revision 1.2  2000/09/29 19:39:22  fredde
+ * we do not care about volume anymore
+ *
+ * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
+ * initial commit
  *
  */
