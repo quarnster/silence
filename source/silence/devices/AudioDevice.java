@@ -26,7 +26,7 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.5 2000/05/07 14:10:54 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.6 2000/05/27 10:11:30 quarn Exp $
  */
 public abstract class AudioDevice {
 
@@ -46,6 +46,16 @@ public abstract class AudioDevice {
 		// to return instead...
 		return null;
 	}
+
+	/**
+	 * Returns the name of this device
+	 */
+	public abstract String getName();
+
+	/**
+	 * Returns the home url for this device
+	 */
+	public abstract String getUrl();
 
 	/**
 	 * Init the AudioDevice
@@ -89,6 +99,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.6  2000/05/27 10:11:30  quarn
+ * added getName and getUrl functions
+ *
  * Revision 1.5  2000/05/07 14:10:54  quarn
  * added getSystemAudioDevice function
  *

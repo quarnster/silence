@@ -26,7 +26,7 @@ import silence.devices.AudioDevice;
  * Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.
  * You can download Midas from http://www.s2.org/midas/
  * @author Fredrik Ehnbom
- * @version $Id: MidasDevice.java,v 1.4 2000/05/07 09:30:10 quarn Exp $
+ * @version $Id: MidasDevice.java,v 1.5 2000/05/27 10:11:30 quarn Exp $
  */
 public class MidasDevice extends AudioDevice implements Runnable {
 
@@ -39,6 +39,20 @@ public class MidasDevice extends AudioDevice implements Runnable {
 	 * @return -1 if it has not, or the syncnumber if it has
 	 */
 	private native int synced();
+
+	/**
+	 * Returns the name of this device
+	 */
+	public String getName() {
+		return "Midas";
+	}
+
+	/**
+	 * Returns the homepage url for this device
+	 */
+	public String getUrl() {
+		return "http://www.s2.org/midas/";
+	}
 
 	/**
 	 * Initialize the device
@@ -137,6 +151,9 @@ public class MidasDevice extends AudioDevice implements Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
+ * Revision 1.5  2000/05/27 10:11:30  quarn
+ * added getName and getUrl functions
+ *
  * Revision 1.4  2000/05/07 09:30:10  quarn
  * Added setVolume method, some fixes
  *

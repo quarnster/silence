@@ -25,7 +25,7 @@ import silence.devices.AudioDevice;
  * FMOD is Copyright (c) 1999-2000 FireLight Multimedia
  * You can download FMOD from http://www.fmod.org
  * @author Fredrik Ehnbom
- * @version $Id: FmodDevice.java,v 1.1 2000/05/07 14:13:47 quarn Exp $
+ * @version $Id: FmodDevice.java,v 1.2 2000/05/27 10:11:30 quarn Exp $
  */
 public class FmodDevice extends AudioDevice implements  Runnable {
 
@@ -38,6 +38,20 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 	 * @return -1 if it has not, or the syncnumber if it has
 	 */
 	private native int synced();
+
+	/**
+	 * Returns the name of this device
+	 */
+	public String getName() {
+		return "Fmod";
+	}
+
+	/**
+	 * Returns the homepage url for this device
+	 */
+	public String getUrl() {
+		return "http://www.fmod.org";
+	}
 
 	/**
 	 * Initialize the device
@@ -125,6 +139,9 @@ public class FmodDevice extends AudioDevice implements  Runnable {
 /*
  * ChangeLog:
  * $Log: FmodDevice.java,v $
+ * Revision 1.2  2000/05/27 10:11:30  quarn
+ * added getName and getUrl functions
+ *
  * Revision 1.1  2000/05/07 14:13:47  quarn
  * the FMOD device
  *
