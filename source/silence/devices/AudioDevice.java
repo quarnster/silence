@@ -18,7 +18,7 @@
 
 package silence.devices;
 
-import silence.AudioException;
+import silence.*;
 
 import silence.devices.fmod.*;
 import silence.devices.midas.*;
@@ -26,9 +26,11 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.11 2000/06/25 15:59:27 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.12 2000/06/25 18:43:23 quarn Exp $
  */
 public abstract class AudioDevice {
+
+	protected CallbackClass callback = null;
 
 	/**
 	 * Returns the name of this device
@@ -66,7 +68,19 @@ public abstract class AudioDevice {
 	/**
 	 * This function is called when a sync event occurs
 	 */
-	public abstract void sync(int effect);
+	public void sync(int effect) {
+		if (callback != null) {
+			callback.syncCallback(effect);
+		}
+	}
+
+	/**
+	 * Sets the CallbackClass to be used for callbacks
+	 * @param cClass The CallbackClass
+	 */
+	public void setCallbackClass(CallbackClass cClass) {
+		this.callback = cClass;
+	}
 
 	/**
 	 * Sets the volume
@@ -82,6 +96,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.12  2000/06/25 18:43:23  quarn
+ * new sync system
+ *
  * Revision 1.11  2000/06/25 15:59:27  quarn
  * removed unneeded stuff
  *
