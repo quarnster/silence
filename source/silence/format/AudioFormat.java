@@ -26,7 +26,7 @@ import org.komplex .audio.PullAudioSource;
 /**
  * The basic class for AudioFormats
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.2 2000/08/20 17:57:01 quarn Exp $
+ * @version $Id: AudioFormat.java,v 1.3 2000/08/25 17:37:33 quarn Exp $
  */
 public abstract class AudioFormat implements PullAudioSource {
 
@@ -35,6 +35,9 @@ public abstract class AudioFormat implements PullAudioSource {
 
 	/** the samplerate for the device used */
 	protected int deviceSampleRate = 0;
+
+	/** the volume */
+	protected double volume = 1;
 
 	static {
 		// put all supported formats to the format list
@@ -88,10 +91,21 @@ public abstract class AudioFormat implements PullAudioSource {
 	public void setSampleRate(int rate) {
 		deviceSampleRate = rate;
 	}
+
+	/**
+	 * Sets the volume
+	 * @param volume The new volume
+	 */
+	public void setVolume(double volume) {
+		this.volume = volume;
+	}
 }
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.3  2000/08/25 17:37:33  quarn
+ * added volume stuff
+ *
  * Revision 1.2  2000/08/20 17:57:01  quarn
  * added .au format, samplerate stuff
  *
