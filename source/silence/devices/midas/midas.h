@@ -25,6 +25,14 @@ JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init
 
 /*
  * Class:     silence_devices_midas_MidasDevice
+ * Method:    setVolume
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_setVolume
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     silence_devices_midas_MidasDevice
  * Method:    Nplay
  * Signature: (Ljava/lang/String;Z)V
  */

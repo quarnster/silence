@@ -43,6 +43,11 @@ JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init(JNIEnv* jne, 
 		return;
 	}
 }
+JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_setVolume(JNIEnv* jne, jobject obj, jint vol) {
+	if (module != NULL && vol <= 64 && vol >= 0) {
+		MIDASsetMusicVolume(handle, vol);
+	}
+}
 
 JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_Nplay(JNIEnv* jne, jobject obj, jstring mod, jboolean loop) {
 	jclass MidasException = jne->FindClass("silence/devices/midas/MidasException");
