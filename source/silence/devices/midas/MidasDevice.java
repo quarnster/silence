@@ -22,10 +22,13 @@ import silence.devices.AudioDevice;
 
 /**
  * An audio device which uses midas
+ *
+ * Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.
+ * You can download Midas from http://www.s2.org/midas/
  * @author Fredrik Ehnbom
- * @version $Id: MidasDevice.java,v 1.3 2000/04/30 13:19:03 quarn Exp $
+ * @version $Id: MidasDevice.java,v 1.4 2000/05/07 09:30:10 quarn Exp $
  */
-public class MidasDevice implements AudioDevice, Runnable {
+public class MidasDevice extends AudioDevice implements Runnable {
 
 	static {
 		System.loadLibrary("midasglue");
@@ -39,23 +42,32 @@ public class MidasDevice implements AudioDevice, Runnable {
 
 	/**
 	 * Initialize the device
+	 * @param sound If we should play the song regular or in nosound mode
 	 */
 	public native void init(boolean sound) throws MidasException;
 
 	/**
 	 * The native play function
+	 * @param file The file to play
+	 * @param loop Wheter to loop or not
 	 */
-	public native void Nplay(String file, boolean loop) throws MidasException;
+	private native void Nplay(String file, boolean loop) throws MidasException;
 
 	/**
 	 * The native stop function
 	 */
-	public native void Nstop();
+	private native void Nstop();
 
 	/**
 	 * Close and clean up
 	 */
 	public native void close();
+
+	/**
+	 * Set the volume
+	 * @param volume The new volume
+	 */
+	public native void setVolume(int volume);
 
 	/**
 	 * Quick hack for the syncing to work
@@ -68,6 +80,9 @@ public class MidasDevice implements AudioDevice, Runnable {
 	public MidasDevice() {
 	}
 
+	/**
+	 * A quick hack for the syncing
+	 */
 	public void run() {
 		int i;
 		while (t != null) {
@@ -76,13 +91,14 @@ public class MidasDevice implements AudioDevice, Runnable {
 			}
 			try {
 				// just to not hog all the cpu power...
-				t.sleep(1);
+				t.sleep(10);
 			} catch (InterruptedException ie) {}
 		}
 	}
 
 	/**
 	 * This function is called when a sync event has occured.
+	 * @param synceff The synceffect parameter
 	 */
 	public void sync(int synceff) {
 		System.out.println("sync: " + synceff);
@@ -90,6 +106,8 @@ public class MidasDevice implements AudioDevice, Runnable {
 
 	/**
 	 * Starts playing the file
+	 * @param file The file to play
+	 * @param loop Wheter to loop or not
 	 */
 	public void play(String file, boolean loop) throws MidasException {
 		Nplay(file, loop);
@@ -110,7 +128,7 @@ public class MidasDevice implements AudioDevice, Runnable {
 	/**
 	 * Stops playing the file
 	 */
-	public void stop(){
+	public void stop() {
 		Nstop();
 
 		t = null;
@@ -119,6 +137,9 @@ public class MidasDevice implements AudioDevice, Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
+ * Revision 1.4  2000/05/07 09:30:10  quarn
+ * Added setVolume method, some fixes
+ *
  * Revision 1.3  2000/04/30 13:19:03  quarn
  * choose which file to play in the play method instead of init
  *
