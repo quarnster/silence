@@ -26,25 +26,32 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.8 2000/06/08 16:22:33 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.9 2000/06/20 22:38:59 quarn Exp $
  */
 public abstract class AudioDevice {
+
+	/** Wheter or not we can use native code */
+	private static boolean useNative = true;
+
+	static {
+		try {
+			System.loadLibrary("silence");
+		} catch (Throwable t) {
+			useNative = false;
+		}
+	}
 
 	/**
 	 * Returns the AudioDevice for this platform
 	 */
 	public static AudioDevice getSystemAudioDevice() {
 		String sys = System.getProperty("os.name");
-		try {
+		if (useNative) {
 			if (sys.indexOf("Windows") != -1) {
-				System.loadLibrary("fmodglue");
 				return new FmodDevice();
 			} else if (sys.equals("Linux")) {
-				System.loadLibrary("midasglue");
 				return new MidasDevice();
 			}
-		} catch (Throwable t) {
-			return new MuhmuDevice();
 		}
 
 		return new MuhmuDevice();
@@ -116,6 +123,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.9  2000/06/20 22:38:59  quarn
+ * now loads the silence library
+ *
  * Revision 1.8  2000/06/08 16:22:33  quarn
  * added the 100% pure java MuhmuDevice
  *
