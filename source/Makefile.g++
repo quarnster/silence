@@ -12,6 +12,7 @@ CFLAGS = --shared -ggdb -Wall -I$(JAVADIR)/include -I$(JAVADIR)/include/linux -I
 
 CLASSES = silence/AudioException.class \
 	silence/devices/AudioDevice.class \
+	silence/devices/MuhmuDevice.class \
 	silence/devices/midas/MidasDevice.class \
 	silence/devices/midas/MidasException.class \
 	silence/devices/fmod/FmodDevice.class \
@@ -25,7 +26,11 @@ XM = 	silence/format/xm/Pattern.class \
 
 all: $(CLASSES) $(XM)
 
-dist: all nativelibs jar
+javadoc:
+	mkdir javadoc
+	javadoc -d javadoc silence silence.devices silence.devices.midas silence.devices.fmod silence.format.xm
+
+dist: all nativelibs jar javadoc
 
 nativelibs: midaslib
 	
@@ -40,6 +45,8 @@ clean:
 	rm -f silence/format/xm/*.class
 	rm -f *.so 
 	rm -f *.jar
+	rm -f -r javadoc
+
 jar:
 	jar cvf silence.jar \
 	silence/*.class \

@@ -19,9 +19,13 @@ XM = 	silence/format/xm/Pattern.class \
 	silence/format/xm/Instrument.class \
 	silence/format/xm/Xm.class
 
+javadoc:
+	mkdir javadoc
+	javadoc -d javadoc silence silence.devices silence.devices.midas silence.devices.fmod silence.format.xm
+
 all: $(CLASSES) $(XM)
 
-dist: all nativelibs jar
+dist: all nativelibs jar javadoc
 
 nativelibs: fmodlib midaslib
 	
@@ -34,8 +38,9 @@ clean:
 	del silence\devices\midas\*.class
 	del silence\devices\fmod\*.class
 	del silence\format\xm\*.class
-	del *.dll 
+	del *.dll
 	del *.jar
+	deltree javadoc
 
 jar:
 	jar cvf silence.jar silence/*.class silence/devices/*.class silence/devices/midas/*.class
