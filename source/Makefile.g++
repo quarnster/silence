@@ -6,9 +6,7 @@ JAVAFLAGS = -g -deprecation
 
 CLASSES = silence/AudioException.class \
 	silence/Silence.class \
-	silence/CallbackClass.class \
-	silence/devices/AudioDevice.class \
-	silence/devices/MuhmuDevice.class \
+	silence/CallbackClass.class
 
 all: $(CLASSES) formats
 
@@ -30,7 +28,6 @@ dist: all jar javadoc
 
 clean:
 	rm -f silence/*.class
-	rm -f silence/devices/*.class
 	rm -f silence/format/*.class
 	rm -f silence/format/xm/*.class
 	rm -f silence/format/au/*.class
@@ -40,7 +37,6 @@ clean:
 jar:
 	jar cvf silence.jar \
 	silence/*.class \
-	silence/devices/*.class \
 	silence/format/*.class \
 	silence/format/xm/*.class
 	silence/format/au/*.class
