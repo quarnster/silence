@@ -1,4 +1,4 @@
-/* $Id: InstrumentManager.java,v 1.5 2003/08/23 13:44:59 fredde Exp $
+/* $Id: InstrumentManager.java,v 1.6 2003/09/01 09:05:14 fredde Exp $
  * Copyright (C) 2000-2003 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ package org.gjt.fredde.silence.format.xm;
  * This class handles the playing of an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class InstrumentManager {
 	Xm		xm;
@@ -37,9 +37,14 @@ public class InstrumentManager {
 	float finalVol = 0;
 
 
+	private int	notePitch = 0;
 	private int	currentNote = 0;
 	private int	currentPitch = 0;
 	private int	currentPos = 0;
+
+	double	freq		= 0;
+	int	freqDelta	= 0;
+	int	period		= 0;
 
 	private final float volumeScale = 0.25f;
 
@@ -58,6 +63,7 @@ public class InstrumentManager {
 			currentInstrument = instrument;
 			volumeEnvelope.setData(instrument);
 		}
+		currentVolume = 64;
 		active = false;
 	}
 
@@ -68,9 +74,9 @@ public class InstrumentManager {
 		return  (10*12*16*4) - (note*16*4) - (currentInstrument.sample[0].fineTune / 2) + porta;
 	}
 	final double calcPitch(int note) {
-		int period = getPeriod(note);
+		period = getPeriod(note);
 
-		double freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
+		freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
 		double pitch = (freq / (double) xm.deviceSampleRate);
 
 		return  pitch;
@@ -83,12 +89,14 @@ public class InstrumentManager {
 
 	public void setNote(int note) {
 		currentNote = note;
-		currentPitch = (int) (calcPitch(note) * 1024);
+		notePitch = (int) (calcPitch(note) * 1024);
 	}
 
 	public void playNote(int note) {
 		if (currentInstrument == null || currentInstrument.sample.length == 0) return;
 		porta = 0;
+//		currentVolume = 64;
+		currentPitch = 0;
 		setNote(note);
 		trigger();
 	}
@@ -100,11 +108,13 @@ public class InstrumentManager {
 	}
 
 	public void trigger() {
+		vibPos = 0;
+		vibSweepPos = 0;
 		porta = 0;
 		release = false;
 		currentPos = 0;
 		active = true;
-		currentVolume = 64;
+//		currentVolume = 64;
 		fadeOutVol = 65536;
 		volumeEnvelope.reset();
 	}
@@ -116,11 +126,16 @@ public class InstrumentManager {
 				currentPos += s.loopStart;
 			} else {
 				currentPos = (s.loopStart + s.loopEnd) - currentPos;
-				currentPos = (s.loopStart + s.loopEnd) + currentPos;
-				if (currentPos >> 10 == s.sampleData.length) currentPos = s.loopStart + s.loopEnd -1;
+				currentPos = (s.loopStart + s.loopEnd-1) + currentPos;
+//				if (currentPos >> 10 == s.sampleLength) currentPos = s.loopStart + s.loopEnd -1;
 			}
 			currentPitch = - currentPitch;
 		}
+	}
+
+	private final static int clamp(int src) {
+		src = src < -32768 ? -32768 : src > 32767 ? 32767 : src;
+		return src;
 	}
 
 	public void play(int[] buffer, int off, int len) {
@@ -130,22 +145,39 @@ public class InstrumentManager {
 
 
 		for (int i = off; i < off+len; i++) {
+			int pos = currentPos >> 10;
 
-			if (currentPos >> 10 >= s.sampleData.length || currentPos < 0) {
-				System.out.println("BUG!! xm.playingPatternPos: " + xm.playingPatternPos + ", currentPos: " + (currentPos>>10) + ", length: " + currentInstrument.sample[0].sampleData.length + ", loop: " + (s.loopEnd>>10) + ", currentPitch:  " + currentPitch + ", currentLoopStart: " + (s.loopStart>>10) + ", lt: " + (s.loopType & 0x3));
+			if (pos >= s.sampleLength) {
+				System.out.println("BUG!! xm.playingPatternPos: " + xm.playingPatternPos + ", currentPos: " + (currentPos>>10) + ", length: " + s.sampleLength + ", loop: " + (s.loopEnd>>10) + ", currentPitch:  " + currentPitch + ", currentLoopStart: " + (s.loopStart>>10) + ", lt: " + (s.loopType & 0x3));
 			}
-			int sample = (int) (s.sampleData[(int) (currentPos>>10)] * finalVol)&0xffff;
-			int right = ((buffer[i] >> 16)&0xffff);
-			int left  = (buffer[i] & 0xffff);
+			pos++;
+			int sample = 0;
 
-			buffer[i] += sample << 16 | sample; // (clamp(sample+left)) << 16 | (clamp(sample+right));
+			float finpos = Math.abs(currentPitch / 1024.0f);
+			if (finpos >= 1) {
+				sample = (int) (s.sampleData[pos] * finalVol);
+			} else {
+				short xm1 = s.sampleData[pos - 1];
+				short x0  = s.sampleData[pos + 0];
+				short x1  = s.sampleData[pos + 1];
+				short x2  = s.sampleData[pos + 2];
+				float a = (3 * (x0-x1) - xm1 + x2) / 2.0f;
+				float b = 2*x1 + xm1 - (5*x0 + x2) / 2.0f;
+				float c = (x1 - xm1) / 2.0f;
+				sample = (int) (((((a * finpos) + b) * finpos + c) * finpos + x0) * finalVol);
+			}
+
+//			sample = (int) (s.sampleData[pos] * finalVol);
+
+
+			buffer[i] += sample; //clamp(sample+left) << 16 | clamp(sample+right); // (clamp(sample+left)) << 16 | (clamp(sample+right));
 
 			currentPos += currentPitch;
 
 
 			if (currentPitch < 0 && currentPos < s.loopStart) {
 				pingpong(s);
-			} else if (currentPos >= (s.loopStart + s.loopEnd) || currentPos>>10 >= s.sampleData.length) {
+			} else if (currentPos >= (s.loopStart + s.loopEnd) || currentPos >> 10 >= s.sampleLength) {
 				if ((s.loopType & 0x2) != 0) {
 					// pingpong loop
 					pingpong(s);
@@ -164,7 +196,7 @@ public class InstrumentManager {
 		}
 	}
 
-	public final void updateVolumes() {
+	public final void update() {
 		if (currentInstrument == null) return;
 		rowVol = (( currentVolume / 64f) * volumeScale);
 		if (currentInstrument != null && currentInstrument.sample.length > 0) rowVol *= (currentInstrument.sample[0].volume / 64f);
@@ -187,12 +219,63 @@ public class InstrumentManager {
 				}
 			}
 		}
+//		currentPitch = notePitch;
+		period = getPeriod(currentNote);
+		doVibrato();
+
+		notePitch = (int) (((freq+freqDelta) / (double) xm.deviceSampleRate) * 1024);
+
+		if (currentPitch < 0)
+			currentPitch = -notePitch;
+		else
+			currentPitch = notePitch;
+	}
+
+	int vibPos = 0;
+	int vibSweepPos = 0;
+	void doVibrato() {
+		int delta = 0;
+
+		switch (currentInstrument.vibType & 3) {
+			case 0: delta = (int) (Math.sin(2* Math.PI * vibPos / 256.0f) * 64);
+				break;
+			case 1:
+				delta = 64;
+				if (vibPos > 127)
+					delta = -64;
+			case 2: delta = (128 - ((vibPos + 128) % 256)) >> 1;
+				break;
+			case 3: delta = (128 - ((256 - vibPos)+128)%256) >> 1;
+				break;
+		};
+
+		delta *= currentInstrument.vibDepth;
+		if (currentInstrument.vibSweep != 0)
+			delta = delta * vibSweepPos / currentInstrument.vibSweep;
+		delta >>=6;
+
+//		int period = getPeriod(currentNote);
+
+		freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4))) + delta;
+//		freq += delta;
+
+		vibSweepPos++;
+		if (vibSweepPos > currentInstrument.vibSweep)
+			vibSweepPos = currentInstrument.vibSweep;
+
+		vibPos += currentInstrument.vibRate;
+
+		if (vibPos > 255)
+			vibPos -= 256;
 	}
 
 }
 /*
  * ChangeLog:
  * $Log: InstrumentManager.java,v $
+ * Revision 1.6  2003/09/01 09:05:14  fredde
+ * vibrato, cubic spline etc
+ *
  * Revision 1.5  2003/08/23 13:44:59  fredde
  * moved envelope stuff from InstrumentManager to Envelope
  *
