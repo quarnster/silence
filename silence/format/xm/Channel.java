@@ -1,5 +1,5 @@
 /* Channel.java - Handles a channel
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2001 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ package org.gjt.fredde.silence.format.xm;
 /**
  * A class that handles a channel
  *
- * @version $Id: Channel.java,v 1.8 2000/12/21 17:19:59 fredde Exp $
+ * @version $Id: Channel.java,v 1.9 2001/01/04 18:55:59 fredde Exp $
  * @author Fredrik Ehnbom
  */
 class Channel {
@@ -30,28 +30,28 @@ class Channel {
 		this.xm = xm;
 	}
 
-	int			currentNote			= 0;
-	Instrument		currentInstrument	= null;
-	int			currentVolume		= 64;
-	int			currentEffect		= -1;
-	int			currentEffectParam	= 0;
+	int		currentNote		= 0;
+	Instrument	currentInstrument	= null;
+	int		currentVolume		= 64;
+	int		currentEffect		= -1;
+	int		currentEffectParam	= 0;
 	double		currentPitch		= 0;
-	double		currentPos			= 0;
+	double		currentPos		= 0;
 	double		currentLoopLen		= 0;
 
-	boolean		useVolEnv			= false;
+	boolean		useVolEnv		= false;
 	boolean		sustain			= false;
-	float			volEnvK			= 0;
-	float			volEnv			= 64;
-	int			volEnvLoopLen		= 0;
-	int			volEnvLength		= 0;
-	int			volEnvType			= 0;
-	int			volEnvPos			= 0;
-	int			volEnvSustain		= 0;
+	float		volEnvK			= 0;
+	float		volEnv			= 64;
+	int		volEnvLoopLen		= 0;
+	int		volEnvLength		= 0;
+	int		volEnvType		= 0;
+	int		volEnvPos		= 0;
+	int		volEnvSustain		= 0;
 
-	float			rowVol;
-	float			finalVol;
-	int			fadeOutVol;
+	float		rowVol;
+	float		finalVol;
+	int		fadeOutVol;
 
 	private final double calcPitch(int note) {
 		if (currentInstrument.sample.length == 0) return 0;
@@ -193,7 +193,7 @@ class Channel {
 					}
 				}
 				volEnvLength--;
-			} 
+			}
 		} else if (currentNote == 97) {
 			currentInstrument = null;
 			return;
@@ -268,7 +268,7 @@ class Channel {
 					currentEffectParam = (tmp - 0x40);
 				} else if (tmp < 0x80) { // volume slide up
 					currentEffect = 0x0A;
-					currentEffectParam = (tmp - 0x70) * 16;
+					currentEffectParam = (tmp - 0x70);
 
 				} else if (tmp < 0x90) { // fine volume slide down
 					currentVolume -= (tmp - 0x80);
@@ -284,8 +284,10 @@ class Channel {
 			}
 
 			// effect
-			if ((check & 0x8) != 0)
+			if ((check & 0x8) != 0) {
 				currentEffect = pattern.data[patternpos++];
+				currentEffectParam = 0;
+			}
 
 			// effect param
 			if ((check & 0x10) != 0)
@@ -304,7 +306,7 @@ class Channel {
 				currentEffectParam = (tmp - 0x60);
 			} else if (tmp < 0x80) { // volume slide up
 				currentEffect = 0x0A;
-				currentEffectParam = (tmp - 0x70) * 16;
+				currentEffectParam = (tmp - 0x70);
 			} else if (tmp < 0x90) { // fine volume slide down
 				currentVolume -= (tmp - 0x80);
 			} else if (tmp < 0xa0) { // fine volume slide up
@@ -394,6 +396,9 @@ class Channel {
 /*
  * ChangeLog:
  * $Log: Channel.java,v $
+ * Revision 1.9  2001/01/04 18:55:59  fredde
+ * some smaller changes
+ *
  * Revision 1.8  2000/12/21 17:19:59  fredde
  * volumeenvelopes works better, uses precalced k-values,
  * pingpong loop fixed
