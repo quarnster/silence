@@ -2,15 +2,15 @@
 #include <fmod_errors.h>
 #include "fmodglue.h"
 
-FMUSIC_MODULE *mod;
+FMUSIC_MODULE *fmodule;
 
-int synced = 0;
-unsigned char effect;
+int fsynced = 0;
+unsigned char feffect;
 signed char pause;
 
 void callback(FMUSIC_MODULE *mod, unsigned char sync) {
-	synced = 1;
-	effect = sync;
+	fsynced = 1;
+	feffect = sync;
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_init(JNIEnv *jne, jobject obj, jboolean sound) {
@@ -41,34 +41,34 @@ JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_Nplay(JNIEnv *jne, j
         // the module name
         char *str = (char *)jne->GetStringUTFChars(file, 0);
 
-        if (mod != NULL) return;
+        if (fmodule != NULL) return;
 
 	// load module
-        mod = FMUSIC_LoadSong(str);
-	if (!mod) {
+        fmodule = FMUSIC_LoadSong(str);
+	if (!fmodule) {
                 jne->ReleaseStringUTFChars(file, str);
 		jne->ThrowNew(FmodException, FMOD_ErrorString(FSOUND_GetError()));
                 return;
 	}
 
 	// play
-	FMUSIC_PlaySong(mod);
+	FMUSIC_PlaySong(fmodule);
 
 	// set callback
-        FMUSIC_SetZxxCallback(mod, callback);
+        FMUSIC_SetZxxCallback(fmodule, callback);
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_pause(JNIEnv *jne, jobject obj) {
-        if (mod != NULL) {
+        if (fmodule != NULL) {
                 pause = !pause;
-                FMUSIC_SetPaused(mod, pause);
+                FMUSIC_SetPaused(fmodule, pause);
         }
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_Nstop(JNIEnv *jne, jobject obj) {
-        if (mod != NULL) {
-                FMUSIC_FreeSong(mod);
-                mod = NULL;
+        if (fmodule != NULL) {
+                FMUSIC_FreeSong(fmodule);
+                fmodule = NULL;
         }
 }
 
@@ -77,15 +77,15 @@ JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_close(JNIEnv *jne, j
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_setVolume(JNIEnv *jne, jobject obj, jint vol) {
-        if (mod != NULL) {
-                FMUSIC_SetMasterVolume(mod, vol);
+        if (fmodule != NULL) {
+                FMUSIC_SetMasterVolume(fmodule, vol);
         }
 }
 
 JNIEXPORT jint JNICALL Java_silence_devices_fmod_FmodDevice_synced(JNIEnv *jne, jobject obj) {
-	if (synced) {
-		synced = 0;
-		return effect;
+	if (fsynced) {
+		fsynced = 0;
+		return feffect;
 	} else {
 		return -1;
 	}
