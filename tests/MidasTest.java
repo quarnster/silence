@@ -26,9 +26,14 @@ import java.awt.event.*;
 /**
  * An example player for the Midas device
  * @author Fredrik Ehnbom
- * @version $Id: MidasTest.java,v 1.2 2000/05/07 09:32:59 quarn Exp $
+ * @version $Id: MidasTest.java,v 1.3 2000/06/10 18:05:33 quarn Exp $
  */
 public class MidasTest extends Frame {
+
+	static {
+		// load the midas library
+		System.loadLibrary("midasglue");
+	}
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
@@ -121,6 +126,9 @@ public class MidasTest extends Frame {
 /*
  * ChangeLog:
  * $Log: MidasTest.java,v $
+ * Revision 1.3  2000/06/10 18:05:33  quarn
+ * fixed
+ *
  * Revision 1.2  2000/05/07 09:32:59  quarn
  * Added the setVolume function
  *

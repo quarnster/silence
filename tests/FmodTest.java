@@ -26,9 +26,14 @@ import java.awt.event.*;
 /**
  * An example player for the FMOD device
  * @author Fredrik Ehnbom
- * @version $Id: FmodTest.java,v 1.1 2000/05/07 14:09:29 quarn Exp $
+ * @version $Id: FmodTest.java,v 1.2 2000/06/10 18:05:33 quarn Exp $
  */
 public class FmodTest extends Frame {
+
+	static {
+		// load the library for fmod
+		System.loadLibrary("fmodglue");
+	}
 
 	/**
 	 * The AudioDevice to use for playing the AudioFormat 
@@ -127,13 +132,10 @@ public class FmodTest extends Frame {
 /*
  * ChangeLog:
  * $Log: FmodTest.java,v $
+ * Revision 1.2  2000/06/10 18:05:33  quarn
+ * fixed
+ *
  * Revision 1.1  2000/05/07 14:09:29  quarn
  * a test for FMOD
- *
- * Revision 1.2  2000/05/07 09:32:59  quarn
- * Added the setVolume function
- *
- * Revision 1.1  2000/04/30 13:16:17  quarn
- * A little test for the Midas device
  *
  */
