@@ -27,7 +27,7 @@ import silence.format.*;
  * can find at http://www.wotsit.org
  * 
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.1 2000/08/20 17:59:32 quarn Exp $
+ * @version $Id: Au.java,v 1.2 2000/08/25 17:38:44 quarn Exp $
  */
 public class Au extends AudioFormat {
 
@@ -80,8 +80,6 @@ public class Au extends AudioFormat {
 		// sample rate	the number of samples/second (e.g., 8000)
 		samplerate = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
 		System.out.println("rate: " + samplerate);
-		pitch = 1 / ((double) deviceSampleRate / samplerate);
-		System.out.println("pitch: " + pitch);
 		
 		// channels		the number of interleaved channels (e.g., 1)
 		int channels = (in.read() << 24) | (in.read() << 16) | (in.read() << 8) | (in.read());
@@ -121,16 +119,30 @@ public class Au extends AudioFormat {
 	public int read(int[] buffer, int off, int len) {
 		// do lots of stuff...
 		for (int i = off; i < len; i++) {
-			buffer[i] = (sampledata[(int) samppos] & 65535) | (sampledata[(int) samppos] << 16);
+			int currsamp = sampledata[(int) samppos];
+			currsamp *= volume;
+
+			buffer[i] = (currsamp & 65535) | (currsamp << 16);
 			samppos += pitch;
 			if ((int) samppos >= sampledata.length) samppos = 0;
 		}
 		return len;
 	}
+
+	/**
+	 * recalc pitch
+	 */
+	public void setSampleRate(int samplerate) {
+		deviceSampleRate = samplerate;
+		pitch = 1 / ((double) deviceSampleRate / this.samplerate);
+	}
 }
 /*
  * ChangeLog:
  * $Log: Au.java,v $
+ * Revision 1.2  2000/08/25 17:38:44  quarn
+ * updated
+ *
  * Revision 1.1  2000/08/20 17:59:32  quarn
  * for .au playing
  *

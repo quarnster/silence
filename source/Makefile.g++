@@ -9,12 +9,6 @@ CLASSES = silence/AudioException.class \
 	silence/CallbackClass.class \
 	silence/devices/AudioDevice.class \
 	silence/devices/MuhmuDevice.class \
-	silence/devices/midas/MidasDevice.class \
-	silence/devices/midas/MidasException.class \
-	silence/devices/fmod/FmodDevice.class \
-	silence/devices/fmod/FmodException.class \
-	silence/devices/bass/BassDevice.class \
-	silence/devices/bass/BassException.class 
 
 all: $(CLASSES) formats
 
@@ -27,7 +21,7 @@ formats: silence/format/AudioFormat.class \
 
 javadoc:
 	mkdir javadoc
-	javadoc -d javadoc silence silence.devices silence.format silence.format.xm
+	javadoc -d javadoc silence silence.devices silence.format silence.format.xm silence.format.au
 
 dist: all jar javadoc
 
@@ -39,7 +33,7 @@ clean:
 	rm -f silence/devices/*.class
 	rm -f silence/format/*.class
 	rm -f silence/format/xm/*.class
-	rm -f *.so 
+	rm -f silence/format/au/*.class
 	rm -f *.jar
 	rm -f -r javadoc
 
@@ -49,3 +43,4 @@ jar:
 	silence/devices/*.class \
 	silence/format/*.class \
 	silence/format/xm/*.class
+	silence/format/au/*.class
