@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.5 2001/01/06 10:40:23 fredde Exp $
+# $Id: Makefile,v 1.6 2001/01/08 19:44:08 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
@@ -33,10 +33,8 @@ tests: formats \
 javadoc:
 	mkdir javadoc
 	javadoc -version -author -d javadoc \
-	org.gjt.fredde.silence \
-	org.gjt.fredde.silence.format \
-	org.gjt.fredde.silence.format.xm \
-	org.gjt.fredde.silence.format.au
+	`find org/gjt/fredde/silence/ -regex .*.java -print`
+
 
 dist: all tests javadoc
 
