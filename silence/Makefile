@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.9 2003/08/22 12:34:54 fredde Exp $
+# $Id: Makefile,v 1.10 2003/08/23 13:43:59 fredde Exp $
 #
 
 CLASSPATH = $CLASSPATH
@@ -23,6 +23,7 @@ SILENCE = org/gjt/fredde/silence/AudioException.class \
 	org/gjt/fredde/silence/format/xm/InstrumentManager.class \
 	org/gjt/fredde/silence/format/xm/EffectManager.class \
 	org/gjt/fredde/silence/format/xm/Channel.class \
+	org/gjt/fredde/silence/format/xm/Envelope.class \
 	org/gjt/fredde/silence/format/xm/Xm.class \
 	\
 	org/gjt/fredde/silence/format/au/Au.class \
