@@ -25,7 +25,7 @@ import silence.devices.AudioDevice;
  * Midas Digital Audio System is Copyright (c) 1996-1999 Housemarque Inc.<br>
  * You can download Midas from <a href="http://www.s2.org/midas">http://www.s2.org/midas</a><br>
  * @author Fredrik Ehnbom
- * @version $Id: MidasDevice.java,v 1.6 2000/06/08 16:27:49 quarn Exp $
+ * @version $Id: MidasDevice.java,v 1.7 2000/06/20 23:09:28 quarn Exp $
  */
 public class MidasDevice extends AudioDevice implements Runnable {
 
@@ -130,9 +130,7 @@ public class MidasDevice extends AudioDevice implements Runnable {
 	/**
 	 * Pause music
 	 */
-	public void pause() throws MidasException {
-		throw new MidasException("Pause is not supported yet...");
-	}
+	 public void pause() {};
 
 	/**
 	 * Stops playing the file
@@ -146,6 +144,9 @@ public class MidasDevice extends AudioDevice implements Runnable {
 /*
  * ChangeLog:
  * $Log: MidasDevice.java,v $
+ * Revision 1.7  2000/06/20 23:09:28  quarn
+ * do nothing on pause instead of throwing an exception
+ *
  * Revision 1.6  2000/06/08 16:27:49  quarn
  * moved the loadLibrary function to AudioDevice.java
  *
