@@ -26,50 +26,9 @@ import silence.devices.midas.*;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.10 2000/06/20 23:08:32 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.11 2000/06/25 15:59:27 quarn Exp $
  */
 public abstract class AudioDevice {
-
-	/** Wheter or not we can use native code */
-	private static boolean useNative = true;
-
-	static {
-		try {
-			System.loadLibrary("silence");
-		} catch (Throwable t) {
-			useNative = false;
-		}
-	}
-
-	/**
-	 * Returns the AudioDevice for this platform
-	 */
-	public static AudioDevice getSystemAudioDevice() {
-		String sys = System.getProperty("os.name");
-		if (useNative) {
-			if (sys.indexOf("Windows") != -1) {
-				return new FmodDevice();
-			} else if (sys.equals("Linux")) {
-				return new MidasDevice();
-			}
-		}
-
-		return new MuhmuDevice();
-	}
-
-	/**
-	 * Returns the classname for the AudioDevice of this platform
-	 */
-	public static String getSystemAudioDeviceName() {
-		String sys = System.getProperty("os.name");
-		if (sys.indexOf("Windows") != -1) {
-			return "silence.devices.fmod.FmodDevice";
-		} else if (sys.equals("Linux")) {
-			return "silence.devices.midas.MidasDevice";
-		}
-
-		return "silence.devices.MuhmuDevice";
-	}
 
 	/**
 	 * Returns the name of this device
@@ -123,6 +82,9 @@ public abstract class AudioDevice {
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.11  2000/06/25 15:59:27  quarn
+ * removed unneeded stuff
+ *
  * Revision 1.10  2000/06/20 23:08:32  quarn
  * removed the exception throwing on pause
  *
