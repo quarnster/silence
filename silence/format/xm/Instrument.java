@@ -23,7 +23,7 @@ import java.io.*;
  * This class stores information about an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Id: Instrument.java,v 1.3 2000/10/12 15:07:17 fredde Exp $
+ * @version $Id: Instrument.java,v 1.4 2000/10/14 19:10:05 fredde Exp $
  */
 class Instrument {
 
@@ -39,63 +39,45 @@ class Instrument {
 		throws IOException
 	{
 		// Instrument size
-		byte b[] = Xm.read(in, 4);
-		int[] t = new int[4];
-		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
-		t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
-		int size = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+		int size = Xm.make32Bit(Xm.read(in, 4));
 
 
 		// Instrument name
-		b = Xm.read(in, 22);
+		Xm.read(in, 22);
 
 		// Instrument type (always 0)
 		// Note: not always 0 but it says so in the documents...
 		in.read();
 
 		// Number of samples in instrument
-		b = Xm.read(in, 2);
-		sample = new Sample[b[0]];
+		sample = new Sample[Xm.make16Bit(Xm.read(in, 2))];
 
 		if (sample.length == 0) {
-			b = Xm.read(in, size - 29);
+			Xm.read(in, size - 29);
 		} else {
 			// Sample header size
-			b = Xm.read(in, 4);
-			t = new int[4];
-			t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-			t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-			t[2] = (int) ((b[2] < 0 ) ? 256 + b[2] : b[2]);
-			t[3] = (int) ((b[3] < 0 ) ? 256 + b[3] : b[3]);
-			int ssize = (t[0] << 0) + (t[1] << 8) + (t[2] << 16) + (t[3] << 24);
+			int ssize = Xm.make32Bit(Xm.read(in, 4));
 			if (ssize != 40) {
 				throw new IOException("samplesize != 40!");
 			}
 
 
 			// Sample number for all notes
-			b = Xm.read(in, 96);
+			Xm.read(in, 96);
 
 			// Points for volume envelope
 			byte[] tmp = Xm.read(in, 48);
 
 			// Points for panning envelope
-			b = Xm.read(in, 48);
+			Xm.read(in, 48);
 
 			// Number of volume points
 			int points = in.read();
 			volumeEnvelopePoints = new int[points * 2];
 
 			int pos = 0;
-			for (int i = 0; i < points * 2; i++) {
-				volumeEnvelopePoints[i] = tmp[pos++];
-				volumeEnvelopePoints[i] += (tmp[pos++] * 256);
-
-				if (volumeEnvelopePoints[i] < 0) {
-					volumeEnvelopePoints[i] = 256 + volumeEnvelopePoints[i];
-				}
+			for (int i = 0; i < points * 2; i++, pos += 2) {
+				volumeEnvelopePoints[i] = Xm.make16Bit(tmp, pos);
 			}
 
 			// Number of panning points 
@@ -138,14 +120,10 @@ class Instrument {
 			in.read();
 
 			// Volume fadeout
-			b = Xm.read(in, 2);
-			t = new int[2];
-			t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-			t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-			fadeoutVolume= (t[0] << 0) + (t[1] << 8);
+			fadeoutVolume= Xm.make16Bit(Xm.read(in, 2));
 
 			// reserved
-			b = Xm.read(in, 22);
+			Xm.read(in, 22);
 
 			for (int i = 0; i < sample.length; i++) {
 				sample[i] = new Sample(in);
@@ -159,6 +137,9 @@ class Instrument {
 /*
  * ChangeLog:
  * $Log: Instrument.java,v $
+ * Revision 1.4  2000/10/14 19:10:05  fredde
+ * now uses Xm.make[16|32]Bit()
+ *
  * Revision 1.3  2000/10/12 15:07:17  fredde
  * removed log messages
  *

@@ -23,7 +23,7 @@ import java.io.*;
  * Stores pattern data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Pattern.java,v 1.3 2000/10/07 13:50:49 fredde Exp $
+ * @version $Id: Pattern.java,v 1.4 2000/10/14 19:10:31 fredde Exp $
  */
 class Pattern {
 	private int nrows = 0;
@@ -33,29 +33,22 @@ class Pattern {
 		throws IOException
 	{
 		// Pattern header length
-		byte b[] = Xm.read(in, 4);
+		Xm.read(in, 4);
 
 		// Packing type (always 0)
 		in.read();
 
 		// Number of rows in pattern (1...256)
-		b = Xm.read(in, 2);
-		int[] ih = new int[2];
-		ih[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		ih[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		nrows = (ih[0] << 0) + (ih[1] << 8);
+		nrows = Xm.make16Bit(Xm.read(in, 2));
 
 		// Packed patterndata size
-		b = Xm.read(in, 2);
-		ih[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		ih[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		int size = (ih[0] << 0) + (ih[1] << 8);
+		int size = Xm.make16Bit(Xm.read(in, 2));
 
 		if (size == 0) {
 			data = new int[0];
 			return;
 		}
-		b = Xm.read(in, size);
+		byte[] b = Xm.read(in, size);
 		data = new int[size];
 		for (int i = 0; i < size; i++) {
 			data[i] = b[i];
@@ -78,6 +71,9 @@ class Pattern {
 /*
  * ChangeLog:
  * $Log: Pattern.java,v $
+ * Revision 1.4  2000/10/14 19:10:31  fredde
+ * now uses Xm.make[16|32]Bit()
+ *
  * Revision 1.3  2000/10/07 13:50:49  fredde
  * Fixed to read in correctly. No need to know how
  * many channels the xm have.
