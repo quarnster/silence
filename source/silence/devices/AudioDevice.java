@@ -23,43 +23,55 @@ import silence.AudioException;
 /**
  * The basic class for audio devices
  * @author Fredrik Ehnbom
- * @version $Id: AudioDevice.java,v 1.3 2000/04/30 13:17:51 quarn Exp $
+ * @version $Id: AudioDevice.java,v 1.4 2000/05/07 09:27:07 quarn Exp $
  */
-public interface AudioDevice {
+public abstract class AudioDevice {
 
 	/**
 	 * Init the AudioDevice
+	 * @param sound If we should play the sound or if we are in nosound mode
 	 */
-	public void init(boolean nosound) throws AudioException;
+	public abstract void init(boolean sound) throws AudioException;
 
 	/**
 	 * Start playing the file
+	 * @param file The file to play
+	 * @param loop Wheter to loop or not
 	 */
-	public void play(String file, boolean loop) throws AudioException;
+	public abstract void play(String file, boolean loop) throws AudioException;
 
 	/**
 	 * Stop playing the file
 	 */
-	public void stop();
+	public abstract void stop();
 
 	/**
 	 * Pause the playing of the file
 	 */
-	public void pause() throws AudioException;
+	public abstract void pause() throws AudioException;
 
 	/**
 	 * This function is called when a sync event occurs
 	 */
-	public void sync(int effect);
+	public abstract void sync(int effect);
+
+	/**
+	 * Sets the volume
+	 * @param volume The new volume
+	 */
+	public abstract void setVolume(int volume);
 
 	/**
 	 * Close and cleanup
 	 */
-	public void close();
+	public abstract void close();
 }
 /*
  * ChangeLog:
  * $Log: AudioDevice.java,v $
+ * Revision 1.4  2000/05/07 09:27:07  quarn
+ * Added setVolume method, added javadoc tags\n is now an abstract class instead of an interface
+ *
  * Revision 1.3  2000/04/30 13:17:51  quarn
  * choose which file to play in the play method instead of init
  *
