@@ -28,7 +28,7 @@ import silence.format.AudioFormat;
 /**
  * The basic class for silence.
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.6 2000/08/27 12:39:46 quarn Exp $
+ * @version $Id: Silence.java,v 1.7 2000/09/03 17:36:34 quarn Exp $
  */
 public class Silence implements AudioConstants {
 
@@ -36,6 +36,15 @@ public class Silence implements AudioConstants {
 	private AudioFormat	format = null;
 
 	public Silence() {
+	}
+
+	/**
+	 * Tries to load and init an audiodevice.
+	 * @param soundFormat The format for the audio. You will most likely use one of the FORMAT_* variables.
+	 * @param sound Wheter we want sound output or not (sound or nosound mode)
+	 */
+	public void init(int soundFormat, boolean sound) throws AudioException {
+		init(soundFormat, sound, null);
 	}
 
 	/**
@@ -61,9 +70,11 @@ public class Silence implements AudioConstants {
 				}
 
 				// direcsound requires a component reference
-				Hashtable hash = new Hashtable();
-				hash.put(AudioConstants.PROP_COMPONENT, comp);
-				device.setProperties(hash);
+				if (comp != null) {
+					Hashtable hash = new Hashtable();
+					hash.put(AudioConstants.PROP_COMPONENT, comp);
+					device.setProperties(hash);
+				}
 
 				device.init(soundFormat);
 
@@ -111,6 +122,7 @@ public class Silence implements AudioConstants {
 		if (device == null) throw new AudioException("You must create a device first!");
 
 		this.format = format;
+		format.setPlayLoud(!(device instanceof org.komplex.audio.device.NoSoundDevice));
 		format.setSampleRate(device.getSampleRate());
 		device.setPullSource(format);
 
@@ -141,6 +153,9 @@ public class Silence implements AudioConstants {
 /*
  * ChangeLog:
  * $Log: Silence.java,v $
+ * Revision 1.7  2000/09/03 17:36:34  quarn
+ * added init(int, boolean) method, NoSoundDevice checking
+ *
  * Revision 1.6  2000/08/27 12:39:46  quarn
  * Directsound requires a component reference
  *
