@@ -21,13 +21,14 @@ CLASSES = silence/AudioException.class \
 	silence/devices/bass/BassDevice.class \
 	silence/devices/bass/BassException.class 
 
-all: $(CLASSES) formats nativelibs
+all: $(CLASSES) formats
 
 formats: silence/format/AudioFormat.class \
 	silence/format/xm/Pattern.class \
 	silence/format/xm/Sample.class \
 	silence/format/xm/Instrument.class \
-	silence/format/xm/Xm.class
+	silence/format/xm/Xm.class \
+	silence/format/au/Au.class
 
 javadoc:
 	mkdir javadoc
