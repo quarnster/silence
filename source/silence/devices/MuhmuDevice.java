@@ -28,7 +28,7 @@ import org.komplex.audio.AudioOutDeviceFactory;
 import org.komplex.audio.PullAudioSource;
 
 import silence.AudioException;
-import silence.format.xm.Xm;
+import silence.format.AudioFormat;
 
 /**
  * An audiodevice which uses MuhmuAudio by Jarno Heikkinen
@@ -36,12 +36,12 @@ import silence.format.xm.Xm;
  * For more information about MuhmuAudio please visit
  * <a href="http://muhmuaudio.sourceforge.net">http://muhmuaudio.sourceforge.net</a>
  * @author Fredrik Ehnbom
- * @version $Id: MuhmuDevice.java,v 1.3 2000/06/25 18:39:08 quarn Exp $
+ * @version $Id: MuhmuDevice.java,v 1.4 2000/07/21 09:40:00 quarn Exp $
  */
 public class MuhmuDevice extends AudioDevice {
 
-	private AudioOutDevice  device = null;
-	private PullAudioSource source = null;
+	private AudioOutDevice  device  = null;
+	private AudioFormat 	     format = null;
 
 	/**
 	 * Create a new MuhmuDevice
@@ -108,24 +108,24 @@ public class MuhmuDevice extends AudioDevice {
 	 * @param loop Wheter to loop or not
 	 */
 	public void play(String file, boolean loop) throws AudioException {
-		if (file.toLowerCase().endsWith(".xm")) {
-			try {
-				if (file.indexOf(":") != -1) {
-					// the song should load from an URL
-					URL u = new URL(file);
-					source = new Xm(u.openStream());
-				} else {
-					// it is a file
-					source = new Xm(new FileInputStream(file));
-				}
-			} catch (Throwable t) {
-				throw new AudioException(t.toString());
-			}
-		} else {
-			throw new AudioException(file + " can not be played by this device");
+		if (file.indexOf(".") == -1) throw new AudioException(file + " can not be played by this device");
+
+		String end = file.substring(file.lastIndexOf("."), file.length());
+
+		// get the AudioFormat for this file
+		format = AudioFormat.getFormat(end);
+
+		if (format == null) throw new AudioException(file + " can not be played by this device");
+
+		// load the file
+		try {
+			format.load(file);
+		} catch (Exception e) {
+			throw new AudioException(e.toString());
 		}
 
-		device.setPullSource(source);
+		device.setPullSource(format);
+
 		try {
 			device.start();
 		} catch (org.komplex.audio.AudioException e) {
@@ -159,6 +159,9 @@ public class MuhmuDevice extends AudioDevice {
 /*
  * ChangeLog:
  * $Log: MuhmuDevice.java,v $
+ * Revision 1.4  2000/07/21 09:40:00  quarn
+ * now uses the AudioFormat system
+ *
  * Revision 1.3  2000/06/25 18:39:08  quarn
  * removed the sync method
  *
