@@ -25,7 +25,7 @@ import java.awt.event.*;
 /**
  * An example player for silence.
  * @author Fredrik Ehnbom
- * @version $Id: SilenceTest.java,v 1.2 2000/06/25 18:34:11 quarn Exp $
+ * @version $Id: SilenceTest.java,v 1.3 2000/06/26 16:09:43 quarn Exp $
  */
 public class SilenceTest extends Frame implements CallbackClass {
 
@@ -41,7 +41,7 @@ public class SilenceTest extends Frame implements CallbackClass {
 		System.out.println(audioDevice.getName() + " sync: " + effect);
 	}
 
-	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 128, 4, 0, 256);
+	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 100, 4, 0, 100);
 	private String file = null;
 
 	/**
@@ -127,6 +127,9 @@ public class SilenceTest extends Frame implements CallbackClass {
 /*
  * ChangeLog:
  * $Log: SilenceTest.java,v $
+ * Revision 1.3  2000/06/26 16:09:43  quarn
+ * the volume system now leaps from 0 to 100 (as in percent)
+ *
  * Revision 1.2  2000/06/25 18:34:11  quarn
  * updated for the new CallbackClass
  *

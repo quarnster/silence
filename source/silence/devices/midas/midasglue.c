@@ -44,7 +44,9 @@ JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_init(JNIEnv* jne, 
 	}
 }
 JNIEXPORT void JNICALL Java_silence_devices_midas_MidasDevice_setVolume(JNIEnv* jne, jobject obj, jint vol) {
-	if (module != NULL && vol <= 64 && vol >= 0) {
+	vol = (vol > 100) ? 100 : (vol < 0) ? 0 : vol;
+	if (module != NULL) {
+		vol = (int) (((float) vol / 100) * 64);
 		MIDASsetMusicVolume(handle, vol);
 	}
 }

@@ -26,7 +26,7 @@ import java.awt.event.*;
 /**
  * An example player for the FMOD device
  * @author Fredrik Ehnbom
- * @version $Id: FmodTest.java,v 1.6 2000/06/25 18:34:11 quarn Exp $
+ * @version $Id: FmodTest.java,v 1.7 2000/06/26 16:09:43 quarn Exp $
  */
 public class FmodTest extends Frame implements CallbackClass {
 
@@ -35,7 +35,7 @@ public class FmodTest extends Frame implements CallbackClass {
 	 */
 	private AudioDevice audioDevice = null; 
 
-	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 128, 4, 0, 256);
+	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 100, 4, 0, 100);
 	private String file = null;
 
 	/**
@@ -136,6 +136,9 @@ public class FmodTest extends Frame implements CallbackClass {
 /*
  * ChangeLog:
  * $Log: FmodTest.java,v $
+ * Revision 1.7  2000/06/26 16:09:43  quarn
+ * the volume system now leaps from 0 to 100 (as in percent)
+ *
  * Revision 1.6  2000/06/25 18:34:11  quarn
  * updated for the new CallbackClass
  *

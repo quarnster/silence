@@ -37,7 +37,9 @@ JNIEXPORT void JNICALL Java_silence_devices_bass_BassDevice_init(JNIEnv* jne, jo
 	}
 }
 JNIEXPORT void JNICALL Java_silence_devices_bass_BassDevice_setVolume(JNIEnv* jne, jobject obj, jint vol) {
-	if (mod != NULL && vol <= 100 && vol >= 0) {
+	vol = (vol > 100) ? 100 : (vol < 0) ? 0 : vol;
+	if (mod != NULL) {
+		vol = (int) (((float) vol / 100) * 128);
 		BASS_SetVolume(vol);
 	}
 }

@@ -26,7 +26,7 @@ import java.awt.event.*;
 /**
  * An example player for the Midas device
  * @author Fredrik Ehnbom
- * @version $Id: MidasTest.java,v 1.6 2000/06/25 18:34:11 quarn Exp $
+ * @version $Id: MidasTest.java,v 1.7 2000/06/26 16:09:43 quarn Exp $
  */
 public class MidasTest extends Frame implements CallbackClass {
 
@@ -35,7 +35,7 @@ public class MidasTest extends Frame implements CallbackClass {
 	 */
 	private AudioDevice audioDevice = null;
 
-	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 64, 4, 0, 64);
+	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 100, 4, 0, 100);
 	private String file = null;
 
 	/**
@@ -134,6 +134,9 @@ public class MidasTest extends Frame implements CallbackClass {
 /*
  * ChangeLog:
  * $Log: MidasTest.java,v $
+ * Revision 1.7  2000/06/26 16:09:43  quarn
+ * the volume system now leaps from 0 to 100 (as in percent)
+ *
  * Revision 1.6  2000/06/25 18:34:11  quarn
  * updated for the new CallbackClass
  *

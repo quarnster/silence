@@ -77,7 +77,9 @@ JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_close(JNIEnv *jne, j
 }
 
 JNIEXPORT void JNICALL Java_silence_devices_fmod_FmodDevice_setVolume(JNIEnv *jne, jobject obj, jint vol) {
+	vol = (vol > 100) ? 100 : (vol < 0) ? 0 : vol;
         if (fmodule != NULL) {
+		vol = (int) (((float) vol / 100) * 256);
                 FMUSIC_SetMasterVolume(fmodule, vol);
         }
 }
