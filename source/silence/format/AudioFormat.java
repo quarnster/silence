@@ -26,16 +26,20 @@ import org.komplex .audio.PullAudioSource;
 /**
  * The basic class for AudioFormats
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.1 2000/07/21 09:37:34 quarn Exp $
+ * @version $Id: AudioFormat.java,v 1.2 2000/08/20 17:57:01 quarn Exp $
  */
 public abstract class AudioFormat implements PullAudioSource {
 
 	/** List of formats */
 	private static Hashtable flist = new Hashtable();
 
+	/** the samplerate for the device used */
+	protected int deviceSampleRate = 0;
+
 	static {
 		// put all supported formats to the format list
 		flist.put(".xm", "silence.format.xm.Xm");
+		flist.put(".au", "silence.format.au.Au");
 	}
 
 	/**
@@ -70,15 +74,27 @@ public abstract class AudioFormat implements PullAudioSource {
 				return (AudioFormat) c.newInstance();
 			} catch (Throwable t) {
 				System.err.println("couldn't create " + cl);
+				t.printStackTrace();
 			}
 		} 
 
 		return null;
 	}
+
+	/**
+	 * Set the samplerate for the device used
+	 * @param rate The samplerate
+	 */
+	public void setSampleRate(int rate) {
+		deviceSampleRate = rate;
+	}
 }
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.2  2000/08/20 17:57:01  quarn
+ * added .au format, samplerate stuff
+ *
  * Revision 1.1  2000/07/21 09:37:34  quarn
  * the basic AudioFormat class
  *
