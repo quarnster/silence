@@ -1,4 +1,4 @@
-/* Xm.java - The general xm class
+/* Ogg.java - .ogg playing capabilities
  * Copyright (C) 2001 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@ import com.jcraft.jorbis.*;
  * Original author: ymnk <ymnk@jcraft.com>
  *
  * @author Fredrik Ehnbom
- * @version $Id: Ogg.java,v 1.1 2001/01/04 18:54:54 fredde Exp $
+ * @version $Id: Ogg.java,v 1.2 2001/01/06 10:43:18 fredde Exp $
  */
 public class Ogg
 	extends AudioFormat
@@ -255,6 +255,16 @@ public class Ogg
 		return 1;
 	}
 
+	private final int check(int val) {
+		if (val > 32767) val = 32767;
+		if (val < -32768) val = -32768;
+		if (val < 0) val = val | 0x8000;
+
+		return val;
+	}
+
+	private float pitch = 0;
+
 	public int read(int[] buffer, int off, int len) {
 		try {
 mainLoop:
@@ -271,25 +281,37 @@ mainLoop:
 							break;
 						} else if (result == -1) {
 						} else {
-						        double[][] pcm = _pcm[0];
 						        int bout = (samples < (off+len-i) ? samples : (off+len-i));
 
-						        vd.synthesis_read(bout);        // tell libvorbis how
-											// many samples we
-										        // actually consumed
 							if (samples == 0) continue;
+
+							float z = 0;
 							if (vi.channels == 2) { // stereo
 								int left = _index[0];
 								int right = _index[1];
 
-        							for (int z = 0; z < bout; z++) {
-	        							buffer[i++] = ((int) (pcm[0][left+z] * 32767.) &65535) | (((int) (pcm[1][right+z] * 32767.0)) << 16);
+								while (z < bout && i < (off+len)) {
+	        							buffer[i]    = check((int) (_pcm[0][0][left  + (int) z] * 32767.0)) &65535;
+									buffer[i++] |= check((int) (_pcm[0][1][right + (int) z] * 32767.0)) << 16;
+									z += pitch;
+		        					}
+			        			} else {
+								int left = _index[0];
+
+								while (z < bout && i < (off+len)) {
+									int val = check((int) (_pcm[0][0][left  + (int) z] * 32767.0));
+	        							buffer[i]    = val &65535;
+									buffer[i++] |= val << 16;
+									z += pitch;
 		        					}
 			        			}
+
+							z = z > samples ? samples : z;
+						        vd.synthesis_read((int) z);     // tell libvorbis how
+											// many samples we
+										        // actually consumed
+
 							if (bout == 0) {
-								if ((off+len) != i) {
-									System.out.println("!!!!");
-								}
 								break mainLoop;
 							}
 						}
@@ -325,5 +347,16 @@ mainLoop:
 	{
 		in.close();
 	}
-}
 
+	public void setDevice(org.komplex.audio.AudioOutDevice device) {
+		super.setDevice(device);
+		pitch = ((float) vi.rate / deviceSampleRate);
+	}
+}
+/*
+ * ChangeLog:
+ * $Log: Ogg.java,v $
+ * Revision 1.2  2001/01/06 10:43:18  fredde
+ * now works in different freqs
+ *
+ */
