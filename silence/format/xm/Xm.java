@@ -26,7 +26,7 @@ import org.gjt.fredde.silence.format.AudioFormat;
  * The general xm class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Xm.java,v 1.4 2000/10/08 18:03:10 fredde Exp $
+ * @version $Id: Xm.java,v 1.5 2000/10/14 19:12:24 fredde Exp $
  */
 public class Xm
 	extends AudioFormat
@@ -61,6 +61,29 @@ public class Xm
 		byte[] b = new byte[len];
 		for (int i = 0; i < len; i += in.read(b, i, len-i));
 		return b;
+	}
+
+	public static final int make32Bit(byte[] b) {
+		return make32Bit(b, 0);
+	}
+	public static final int make32Bit(byte[] b, int off) {
+		return (
+				((b[off + 0] & 0xff) << 0) +
+				((b[off + 1] & 0xff) * 256) +
+				((b[off + 2] & 0xff) * 256 * 256) +
+				((b[off + 3] & 0xff) * 256 * 256 * 256)
+			);
+	}
+
+	public static final int make16Bit(byte[] b) {
+		return make16Bit(b, 0);
+	}
+
+	public static final int make16Bit(byte[] b, int off) {
+		return (
+				((b[off + 0] & 0xff) << 0) +
+				((b[off + 1] & 0xff) * 256)
+			);
 	}
 
 	/**
@@ -105,67 +128,46 @@ public class Xm
 		// Tracker name
 		b = read(in, 20);
 
-		System.out.println("Tracker: " + new String(b));
-		System.out.println("Version: 1: " + in.read() + ", 2: " + in.read());
+		// version
+		in.read();
+		in.read();
 
 		// Header size
-		b = read(in, 4);
+		read(in, 4);
 
 		// Song length (in pattern order table)
-		b = read(in, 2);
-		System.out.println("song length: " +  b[0]);
-		patorder = new int[b[0]];
+		patorder = new int[make16Bit(read(in, 2))];
 
 		// Restart position
-		b = read(in, 2);
-		System.out.println("Restart position: " + b[0]);
-
+		read(in, 2);
 
 		// Number of channels (2,4,6,8,10,...,32)
-		b = read(in, 2);
-		System.out.println("Number of channels: " + b[0]);
-		channel = new Channel[b[0]];
+		channel = new Channel[make16Bit(read(in, 2))];
 
 		for (int i = 0; i < channel.length; i++) {
 			channel[i] = new Channel(this);
 		}
 
 		// Number of patterns (max 128)
-		b = read(in, 2);
-		System.out.println("Number of patterns: " + b[0]);
-		pattern = new Pattern[b[0]];
+		pattern = new Pattern[make16Bit(read(in, 2))];
 
 		// Number of instruments (max 128)
-		b = read(in, 2);
-		instrument = new Instrument[(int) ((b[0] < 0) ? 256 + b[0] : b[0])];
-		System.out.println("Number of instruments: " + instrument.length);
+		instrument = new Instrument[make16Bit(read(in, 2))];
 
 		// Flags: bit 0: 0 = Amiga frequency table;
 		//               1 = Linear frequency table
-		b = read(in, 2);
+		read(in, 2);
 
 		// Default tempo
-		b = read(in, 2);
-		defaultTempo = (int) b[0];
-		System.out.println("Default tempo: " + b[0]);
+		defaultTempo = make16Bit(read(in, 2));
 
 		// Default BPM
-		b = read(in, 2);
-		int t[] = new int[2];
-
-		t[0] = (int) ((b[0] < 0 ) ? 256 + b[0] : b[0]);
-		t[1] = (int) ((b[1] < 0 ) ? 256 + b[1] : b[1]);
-		defaultBpm = (t[0] << 0) + (t[1] << 8);
-		System.out.println("Default BPM: " + defaultBpm);
+		defaultBpm = make16Bit(read(in, 2));
 
 		// Pattern order table
 		b = read(in, 256);
 
-		System.out.println("Pattern order table: ");
 		for (int i = 0; i < patorder.length; i++) {
-			if (i+1 != patorder.length) System.out.print(b[i] + ", ");
-			else System.out.println(b[i]);
-
 			patorder[i] = b[i];
 		}
 		playingPatternPos = 0;
@@ -229,7 +231,6 @@ readLoop:
 						playingPatternPos = 0;
 					}
 					playingPattern = patorder[playingPatternPos];
-					System.out.println("pattern: " + playingPattern);
 				}
 				tempo = defaultTempo;
 			}
@@ -251,13 +252,15 @@ readLoop:
 	public void setDevice(org.komplex.audio.AudioOutDevice device) {
 		super.setDevice(device);
 		samplesPerTick = (5 * deviceSampleRate) / (2 * defaultBpm);
-		System.out.println("samples_per_tick: " + samplesPerTick);
-		System.out.println("deviceSampleRate: " + deviceSampleRate);
 	}
 }
 /*
  * ChangeLog:
  * $Log: Xm.java,v $
+ * Revision 1.5  2000/10/14 19:12:24  fredde
+ * added the make[16|32]Bit functions
+ * removed debugging messages
+ *
  * Revision 1.4  2000/10/08 18:03:10  fredde
  * fixed "pattern break" (Dxx) command
  *
