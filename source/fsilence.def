@@ -1,0 +1,10 @@
+LIBRARY     FSILENCE.DLL
+
+EXPORTS
+    Java_silence_devices_fmod_FmodDevice_Nplay @2   ; Java_silence_devices_fmod_FmodDevice_Nplay
+    Java_silence_devices_fmod_FmodDevice_Nstop @4   ; Java_silence_devices_fmod_FmodDevice_Nstop
+    Java_silence_devices_fmod_FmodDevice_close @5   ; Java_silence_devices_fmod_FmodDevice_close
+    Java_silence_devices_fmod_FmodDevice_init @1   ; Java_silence_devices_fmod_FmodDevice_init
+    Java_silence_devices_fmod_FmodDevice_pause @3   ; Java_silence_devices_fmod_FmodDevice_pause
+    Java_silence_devices_fmod_FmodDevice_setVolume @6   ; Java_silence_devices_fmod_FmodDevice_setVolume
+    Java_silence_devices_fmod_FmodDevice_synced @7   ; Java_silence_devices_fmod_FmodDevice_synced
