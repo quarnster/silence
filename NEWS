@@ -1,0 +1,6 @@
+in 0.0.2:
+
+	- Added BassDevice
+	- Added MuhmuDevice
+	- Started the work on the 100% pure java xm player
+	- fixes, etc, etc
