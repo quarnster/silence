@@ -28,7 +28,7 @@ import org.komplex.audio.*;
  * for, lets say, .mp3-files this is the class to extend.
  *
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.5 2001/01/08 19:47:52 fredde Exp $
+ * @version $Id: AudioFormat.java,v 1.6 2001/01/11 20:24:29 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -101,7 +101,7 @@ public abstract class AudioFormat
 	 * Cleanup resources used, ie the BufferedInputStream used for
 	 * streaming
 	 */
-	public abstract void close() throws IOException;
+	public abstract void close();
 
 	/**
 	 * Gets the AudioFormat for the specified format
@@ -138,6 +138,9 @@ public abstract class AudioFormat
 /*
  * ChangeLog:
  * $Log: AudioFormat.java,v $
+ * Revision 1.6  2001/01/11 20:24:29  fredde
+ * removed throws IOException from the close method
+ *
  * Revision 1.5  2001/01/08 19:47:52  fredde
  * makes more sense to save the actual device instead
  * of lots of variables
