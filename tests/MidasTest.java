@@ -26,7 +26,7 @@ import java.awt.event.*;
 /**
  * An example player for the Midas device
  * @author Fredrik Ehnbom
- * @version $Id: MidasTest.java,v 1.1 2000/04/30 13:16:17 quarn Exp $
+ * @version $Id: MidasTest.java,v 1.2 2000/05/07 09:32:59 quarn Exp $
  */
 public class MidasTest extends Frame {
 
@@ -40,6 +40,7 @@ public class MidasTest extends Frame {
 		}
 	};
 
+	private Scrollbar vol = new Scrollbar(Scrollbar.HORIZONTAL, 64, 4, 0, 64);
 	private String file = null;
 
 	/**
@@ -50,6 +51,9 @@ public class MidasTest extends Frame {
 		super("Midas test: " + file);
 		this.file = file;
 		setLayout(new BorderLayout());
+
+		vol.addAdjustmentListener(volListener);
+		add("North", vol);
 
 		try {
 			audioDevice.init(true);
@@ -83,6 +87,12 @@ public class MidasTest extends Frame {
 		show();
 	}
 
+	AdjustmentListener volListener = new AdjustmentListener() {
+		public void adjustmentValueChanged(AdjustmentEvent e) {
+			audioDevice.setVolume(vol.getValue());
+		}
+	};
+
 	ActionListener listener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			String event = ((Button) e.getSource()).getLabel();
@@ -90,6 +100,7 @@ public class MidasTest extends Frame {
 			if (event.equals("Play")) {
 				try {
 					audioDevice.play(file, false);
+					audioDevice.setVolume(vol.getValue());
 				} catch (AudioException ae) {
 					ae.printStackTrace();
 				}
@@ -110,6 +121,9 @@ public class MidasTest extends Frame {
 /*
  * ChangeLog:
  * $Log: MidasTest.java,v $
+ * Revision 1.2  2000/05/07 09:32:59  quarn
+ * Added the setVolume function
+ *
  * Revision 1.1  2000/04/30 13:16:17  quarn
  * A little test for the Midas device
  *
