@@ -2,14 +2,14 @@
 # $Id: Makefile,v 1.1 2005/12/25 21:56:08 quarn Exp $
 #
 
-MuhmuAudioDir = ./
-JOrbisDir = /home/quarn/code/java/jorbis-0.0.14/
-JLayerDir = /home/quarn/code/java/JLayer1.0/src/
+MuhmuAudioDir = ../muhmuaudio
+JOrbisDir = ../jorbis-0.0.14/
+JLayerDir = ../JLayer1.0/src/
 silenceDir = $(PWD)
 
-CLASSPATH =  $(JLayerDir):$(JOrbisDir):$(silenceDir):$(MuhmuAudioDir)
+CLASSPATH =  /usr/lib/j2se/1.4/jre/lib/rt.jar:$(JLayerDir):$(JOrbisDir):$(silenceDir):$(MuhmuAudioDir)
 
-JAVAC = javac
+JAVAC = jikes
 JAVAFLAGS = -g -deprecation -classpath $(CLASSPATH)
 
 .SUFFIXES: .class .java
@@ -30,8 +30,8 @@ SILENCE = silence/AudioException.class \
 	silence/format/xm/EffectManager.class \
 	silence/format/xm/EnvelopeHandler.class \
 	silence/format/xm/InstrumentManager.class \
-	silence/format/xm/SamplePlayer.class \
 	silence/format/xm/ModulePlayer.class \
+	silence/format/xm/SamplePlayer.class \
 	\
 	silence/format/xm/Xm.class \
 	silence/format/xm/XmLoader.class \
@@ -42,7 +42,9 @@ SILENCE = silence/AudioException.class \
 	\
 	silence/format/au/Au.class \
 	silence/format/au/Decoder.class \
-	silence/format/au/MulawDecoder.class
+	silence/format/au/MulawDecoder.class \
+	SimplePlayTest.class \
+	ExampleApplet.class
 
 all: $(SILENCE)
 

@@ -1,5 +1,5 @@
 /* SimplePlayTest.java - A simple example player for silence
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,15 +19,14 @@
 import java.awt.*;
 import java.awt.event.*;
 
-import org.gjt.fredde.silence.*;
-import org.gjt.fredde.silence.format.*;
+import silence.*;
+import silence.format.*;
 
 
 /**
  * A simple example player for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: SimplePlayTest.java,v 1.1 2005/12/25 21:56:08 quarn Exp $
  */
 public class SimplePlayTest
 	extends Frame
@@ -93,19 +92,3 @@ public class SimplePlayTest
 	public void windowIconified(WindowEvent e) {}
 	public void windowActivated(WindowEvent e) {}
 }
-/*
- * ChangeLog:
- * $Log: SimplePlayTest.java,v $
- * Revision 1.1  2005/12/25 21:56:08  quarn
- * Initial revision
- *
- * Revision 1.3  2000/10/14 19:13:54  fredde
- * you can specify the khz used in the commandline
- *
- * Revision 1.2  2000/09/30 09:15:22  fredde
- * does not have to be a thread
- *
- * Revision 1.1  2000/09/29 19:32:11  fredde
- * A simple play test
- *
- */

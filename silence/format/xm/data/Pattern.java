@@ -1,5 +1,5 @@
 /* Pattern.java - Stores pattern data
- * Copyright (C) 2000 Fredrik Ehnbom
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format.xm;
+package silence.format.xm.data;
 
 import java.io.*;
 
@@ -23,37 +23,16 @@ import java.io.*;
  * Stores pattern data
  *
  * @author Fredrik Ehnbom
- * @version $Id: Pattern.java,v 1.4 2000/10/14 19:10:31 fredde Exp $
  */
-class Pattern {
-	private int nrows = 0;
-	int[] data;
+public class Pattern {
+	private int rows = 0;
+	private int[] data;
 
-	public Pattern(BufferedInputStream in)
-		throws IOException
-	{
-		// Pattern header length
-		Xm.read(in, 4);
+	public int getRows() { return rows; }
+	public void setRows(int r) { rows = r; }
 
-		// Packing type (always 0)
-		in.read();
-
-		// Number of rows in pattern (1...256)
-		nrows = Xm.make16Bit(Xm.read(in, 2));
-
-		// Packed patterndata size
-		int size = Xm.make16Bit(Xm.read(in, 2));
-
-		if (size == 0) {
-			data = new int[0];
-			return;
-		}
-		byte[] b = Xm.read(in, size);
-		data = new int[size];
-		for (int i = 0; i < size; i++) {
-			data[i] = b[i];
-		}
-	}
+	public void setData(int[] data) { this.data = data; }
+	public int[] getData() { return data; }
 
 	public static final String notes[] = {
 		"???",
@@ -68,20 +47,3 @@ class Pattern {
 		"[-]"
 	};
 }
-/*
- * ChangeLog:
- * $Log: Pattern.java,v $
- * Revision 1.4  2000/10/14 19:10:31  fredde
- * now uses Xm.make[16|32]Bit()
- *
- * Revision 1.3  2000/10/07 13:50:49  fredde
- * Fixed to read in correctly. No need to know how
- * many channels the xm have.
- *
- * Revision 1.2  2000/10/01 17:07:22  fredde
- * removed unused stuff
- *
- * Revision 1.1.1.1  2000/09/25 16:34:33  fredde
- * initial commit
- *
- */

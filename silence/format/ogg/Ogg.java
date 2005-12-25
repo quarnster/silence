@@ -1,5 +1,5 @@
 /* Ogg.java - .ogg playing capabilities
- * Copyright (C) 2001 Fredrik Ehnbom
+ * Copyright (C) 2001-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,9 +15,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format.ogg;
+package silence.format.ogg;
 
-import org.gjt.fredde.silence.format.*;
+import silence.format.*;
 
 import java.io.*;
 
@@ -31,7 +31,6 @@ import com.jcraft.jogg.*;
  * Original author: ymnk <ymnk@jcraft.com>
  *
  * @author Fredrik Ehnbom
- * @version $Id: Ogg.java,v 1.5 2001/01/27 18:18:35 fredde Exp $
  */
 public class Ogg
 	extends AudioFormat
@@ -162,6 +161,7 @@ public class Ogg
 		// Throw the comments plus a few lines about the bitstream we're
 		// decoding
 		{
+/*
 			byte[][] ptr = vc.user_comments;
 			for (int j = 0; j < ptr.length; j++) {
 				if (ptr[j] == null) break;
@@ -169,6 +169,7 @@ public class Ogg
 			}
 			System.err.println("\nBitstream is "+vi.channels+" channel, "+vi.rate+"Hz");
 			System.err.println("Encoded by: "+new String(vc.vendor, 0, vc.vendor.length-1)+"\n");
+*/
 		}
 
 		// OK, got and parsed all three headers. Initialize the Vorbis
@@ -362,20 +363,3 @@ mainLoop:
 		return "Ogg Vorbis (JOrbis)";
 	}
 }
-/*
- * ChangeLog:
- * $Log: Ogg.java,v $
- * Revision 1.5  2001/01/27 18:18:35  fredde
- * fixed for jOrbis-0.4
- *
- * Revision 1.4  2001/01/11 20:25:37  fredde
- * added custom toString
- *
- * Revision 1.3  2001/01/08 19:49:35  fredde
- * updated now that the AudioFormat just saves the device
- * instead of lots of data in different variables
- *
- * Revision 1.2  2001/01/06 10:43:18  fredde
- * now works in different freqs
- *
- */

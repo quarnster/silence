@@ -1,5 +1,5 @@
-/* $Id: InstrumentManager.java,v 1.6 2003/09/01 09:05:14 fredde Exp $
- * Copyright (C) 2000-2003 Fredrik Ehnbom
+/* $Id: InstrumentManager.java,v 1.1 2005/12/25 21:56:09 quarn Exp $
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,69 +15,142 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format.xm;
+package silence.format.xm;
 
+import silence.format.xm.data.*;
 /**
  * This class handles the playing of an instrument
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.6 $
  */
-public class InstrumentManager {
-	Xm		xm;
+class InstrumentManager {
+	ModulePlayer	mod;
 	int		fadeOutVol;
 
-	float		volEnv			= 64;
-	Envelope volumeEnvelope			= new Envelope();
+	EnvelopeHandler volumeEnvelope		= new EnvelopeHandler();
+	EnvelopeHandler	panningEnvelope		= new EnvelopeHandler();
 
 	private Instrument currentInstrument = null;
 
-	int currentVolume;
-	float rowVol = 0;
-	float finalVol = 0;
+	private	SamplePlayer samplePlayer = new SamplePlayer();
 
+	public void setVolume(int vol) {
+		if (vol < 0) vol = 0;
+		else if (vol > 0x40) vol = 0x40;
+		currentVolume = vol;
+	}
+	public int getVolume() {
+		return currentVolume;
+	}
+	private int currentVolume;
+	private float finalVol = 0;
 
-	private int	notePitch = 0;
-	private int	currentNote = 0;
-	private int	currentPitch = 0;
-	private int	currentPos = 0;
+	private float finalPan = 32;
 
-	double	freq		= 0;
+	private int	currentNote = -1;
+
+	private int	panning = 32;
+
+	public void setPanning(int pan) {
+		this.panning = pan;
+	}
+	public int getPanning() {
+		return panning;
+	}
+
+	private double	freq		= 0;
 	int	freqDelta	= 0;
 	int	period		= 0;
 
-	private final float volumeScale = 0.25f;
+	private final float volumeScale = 0.5f;
 
 	boolean active = false;
 	boolean release = false;
 	int porta = 0;
 
-	public InstrumentManager(Xm xm) {
-		this.xm = xm;
+	public InstrumentManager(ModulePlayer mod) {
+		this.mod = mod;
 	}
 
 	public void setInstrument(Instrument instrument) {
-		if (instrument == null || instrument.sample.length == 0) {
+		if (instrument == null || !instrument.hasSamples()) {
 			currentInstrument = null;
 		} else {
 			currentInstrument = instrument;
-			volumeEnvelope.setData(instrument);
+			volumeEnvelope.setEnvelope(instrument.getVolumeEnvelope());
+			panningEnvelope.setEnvelope(instrument.getPanningEnvelope());
+			samplePlayer.setPosition(0);
 		}
-		currentVolume = 64;
-		active = false;
+	}
+	public Instrument getInstrument() {
+		return currentInstrument;
 	}
 
-	final int getPeriod(int note) {
-		if (currentInstrument == null || currentInstrument.sample.length == 0) return 0;
-		note += (currentInstrument.sample[0].relativeNote - 1);
+	private final static int[] PeriodTab = new int[]{
+		907,900,894,887,881,875,868,862,856,850,844,838,832,826,820,814,
+		808,802,796,791,785,779,774,768,762,757,752,746,741,736,730,725,
+		720,715,709,704,699,694,689,684,678,675,670,665,660,655,651,646,
+		640,636,632,628,623,619,614,610,604,601,597,592,588,584,580,575,
+		570,567,563,559,555,551,547,543,538,535,532,528,524,520,516,513,
+		508,505,502,498,494,491,487,484,480,477,474,470,467,463,460,457
+	};
 
-		return  (10*12*16*4) - (note*16*4) - (currentInstrument.sample[0].fineTune / 2) + porta;
+	final int getPeriodAmiga(int note) {
+		if (currentInstrument == null || !currentInstrument.hasSamples()) return 0;
+		Sample sample = currentInstrument.getSampleForNote(note);
+		int finetune = sample.getFineTune();
+		note += sample.getRelativeNote();
+
+		int idx1 = (note % 12) * 8 + (finetune / 16);
+		if (idx1 < 0) idx1 = 0;
+		int idx2 = (note % 12) * 8 + (finetune / 16) + 1;
+		if (idx2 < 0) idx2 = 0;
+
+		int frac = (int) (((finetune / 16.0f) - (finetune >> 4)) * 1024);
+		int octave = note / 12;
+
+		return (int) ((
+			(
+				((PeriodTab[idx1] * (1024 - frac)) >> 10) +
+				((PeriodTab[idx2] * frac) >> 10)
+			) * 32) >> octave)
+			+ porta;
+	}
+
+	final double getFreqAmiga(int note) {
+		period = getPeriodAmiga(note);
+		return 8363.0 * 1712.0 / period;
+	}
+
+	final int getPeriodLinear(int note) {
+		if (currentInstrument == null || !currentInstrument.hasSamples()) return 0;
+		Sample sample = currentInstrument.getSampleForNote(note);
+
+		note += (sample.getRelativeNote() - 1);
+		return  (10*12*16*4) - (note*16*4) - (sample.getFineTune() / 2) + porta;
+	}
+	final double getFreqLinear(int note) {
+		period = getPeriodLinear(note);
+		return 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
+	}
+
+	public double getFreq(int note) {
+		if (mod.getModule().getAmigaFreqTable())
+			return getFreqAmiga(note);
+		return getFreqLinear(note);
+	}
+	public int getPeriod(int note) {
+		if (mod.getModule().getAmigaFreqTable())
+			return getPeriodAmiga(note);
+		return getPeriodLinear(note);
 	}
 	final double calcPitch(int note) {
-		period = getPeriod(note);
+		if (mod.getModule().getAmigaFreqTable())
+			getFreqAmiga(note);
+		else
+			getFreqLinear(note);
 
-		freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4)));
-		double pitch = (freq / (double) xm.deviceSampleRate);
+		double pitch = (freq / (double) mod.getDeviceSampleRate());
 
 		return  pitch;
 	}
@@ -85,158 +158,138 @@ public class InstrumentManager {
 	public void release() {
 		release = true;
 		volumeEnvelope.release();
+		panningEnvelope.release();
 	}
 
 	public void setNote(int note) {
+		if (currentInstrument == null) return;
 		currentNote = note;
-		notePitch = (int) (calcPitch(note) * 1024);
+		samplePlayer.setSample(currentInstrument.getSampleForNote(currentNote));
 	}
 
 	public void playNote(int note) {
-		if (currentInstrument == null || currentInstrument.sample.length == 0) return;
-		porta = 0;
-//		currentVolume = 64;
-		currentPitch = 0;
+		if (currentInstrument == null) return;
 		setNote(note);
 		trigger();
 	}
 
 	public void setPosition(int position) {
-		if (currentInstrument != null && position < currentInstrument.sample[0].sampleData.length) {
-			currentPos = position << 10;
+		if (currentInstrument != null && position < currentInstrument.getSampleForNote(currentNote).getLength()) {
+			samplePlayer.setPosition(position);
 		}
 	}
 
 	public void trigger() {
+		if (currentInstrument == null) return;
 		vibPos = 0;
 		vibSweepPos = 0;
 		porta = 0;
-		release = false;
-		currentPos = 0;
-		active = true;
-//		currentVolume = 64;
-		fadeOutVol = 65536;
-		volumeEnvelope.reset();
+		samplePlayer.setPosition(0);
+		samplePlayer.setPitch(0); // just to reset pingpong
 	}
 
-	private void pingpong(Sample s) {
-		while ((currentPitch < 0 && currentPos < s.loopStart) || ((currentPos >= s.loopStart + s.loopEnd) && currentPitch > 0)) {
-			if (currentPitch < 0) {
-				currentPos = s.loopStart - currentPos;
-				currentPos += s.loopStart;
-			} else {
-				currentPos = (s.loopStart + s.loopEnd) - currentPos;
-				currentPos = (s.loopStart + s.loopEnd-1) + currentPos;
-//				if (currentPos >> 10 == s.sampleLength) currentPos = s.loopStart + s.loopEnd -1;
-			}
-			currentPitch = - currentPitch;
-		}
-	}
-
-	private final static int clamp(int src) {
-		src = src < -32768 ? -32768 : src > 32767 ? 32767 : src;
-		return src;
-	}
-
-	public void play(int[] buffer, int off, int len) {
+	public void play(int[] left, int[] right, int off, int len) {
 		if (!active || currentInstrument == null/* || currentNote == 0 || finalVol < 0.01*/) return;
-		Sample s = currentInstrument.sample[0];
-		if (s.sampleData.length == 0) return;
 
+		active = samplePlayer.play(left, right, off, len);
+	}
 
-		for (int i = off; i < off+len; i++) {
-			int pos = currentPos >> 10;
+	public void updateData(ChannelUpdateData ud) {
+		Instrument newInstrument = ud.getInstrument();
+		if (newInstrument != null && !newInstrument.hasSamples()) {
+			newInstrument = null;
+			ud.setNote(-1);
+			active = false;
+		}
 
-			if (pos >= s.sampleLength) {
-				System.out.println("BUG!! xm.playingPatternPos: " + xm.playingPatternPos + ", currentPos: " + (currentPos>>10) + ", length: " + s.sampleLength + ", loop: " + (s.loopEnd>>10) + ", currentPitch:  " + currentPitch + ", currentLoopStart: " + (s.loopStart>>10) + ", lt: " + (s.loopType & 0x3));
-			}
-			pos++;
-			int sample = 0;
-
-			float finpos = Math.abs(currentPitch / 1024.0f);
-			if (finpos >= 1) {
-				sample = (int) (s.sampleData[pos] * finalVol);
+		int newNote = ud.getNote();
+		if (newNote != -1) {
+			if (newNote == 97) {
+				release();
 			} else {
-				short xm1 = s.sampleData[pos - 1];
-				short x0  = s.sampleData[pos + 0];
-				short x1  = s.sampleData[pos + 1];
-				short x2  = s.sampleData[pos + 2];
-				float a = (3 * (x0-x1) - xm1 + x2) / 2.0f;
-				float b = 2*x1 + xm1 - (5*x0 + x2) / 2.0f;
-				float c = (x1 - xm1) / 2.0f;
-				sample = (int) (((((a * finpos) + b) * finpos + c) * finpos + x0) * finalVol);
-			}
-
-//			sample = (int) (s.sampleData[pos] * finalVol);
-
-
-			buffer[i] += sample; //clamp(sample+left) << 16 | clamp(sample+right); // (clamp(sample+left)) << 16 | (clamp(sample+right));
-
-			currentPos += currentPitch;
-
-
-			if (currentPitch < 0 && currentPos < s.loopStart) {
-				pingpong(s);
-			} else if (currentPos >= (s.loopStart + s.loopEnd) || currentPos >> 10 >= s.sampleLength) {
-				if ((s.loopType & 0x2) != 0) {
-					// pingpong loop
-					pingpong(s);
-				} else if ((s.loopType & 0x1) != 0) {
-					// forward loop
-					currentPos -= s.loopStart + s.loopEnd;
-					currentPos %= s.loopEnd;
-
-					currentPos += s.loopStart;
-				} else {
-					// no loop
-					active = false;
-					return;
+				if (newInstrument != null)
+					setInstrument(newInstrument);
+				if (currentInstrument != null) {
+					playNote(newNote);
 				}
 			}
 		}
+		if (newInstrument != null && currentNote != -1) {
+			if (newInstrument != currentInstrument) {
+				setInstrument(newInstrument);
+			}
+			setVolume(newInstrument.getSampleForNote(currentNote).getVolume());
+			setPanning(newInstrument.getSampleForNote(currentNote).getPanning());
+			active = true;
+			release = false;
+			volumeEnvelope.reset();
+			panningEnvelope.reset();
+			fadeOutVol = 65536;
+		}
+
+		int newVolume = ud.getVolume();
+		if (newVolume >= 0x10 && newVolume <= 0x50)
+			setVolume(newVolume - 0x10);
 	}
 
-	public final void update() {
-		if (currentInstrument == null) return;
-		rowVol = (( currentVolume / 64f) * volumeScale);
-		if (currentInstrument != null && currentInstrument.sample.length > 0) rowVol *= (currentInstrument.sample[0].volume / 64f);
-		finalVol = rowVol;
+	private void updateVolume() {
+		finalVol = (( currentVolume / 64f) * volumeScale);
 
-		volEnv = volumeEnvelope.getValue();
-		finalVol *= (volEnv / 64);
-		if (xm.globalVolume != 64) finalVol *= ((double) xm.globalVolume / 64);
+		if (volumeEnvelope.use())
+			finalVol *= (volumeEnvelope.getValue() / 64);
 
+		if (mod.getGlobalVolume() != 64) finalVol *= ((double) mod.getGlobalVolume() / 64);
 
 		if (release) {
 			if (!volumeEnvelope.use()) {
 				active = false;
 			} else {
 				finalVol *= ((float) fadeOutVol / 65536);
-				fadeOutVol -= currentInstrument.fadeoutVolume;
+				fadeOutVol -= currentInstrument.getFadeout();
 				if (fadeOutVol <= 10) {
 					active = false;
 					return;
 				}
 			}
 		}
-//		currentPitch = notePitch;
-		period = getPeriod(currentNote);
-		doVibrato();
-
-		notePitch = (int) (((freq+freqDelta) / (double) xm.deviceSampleRate) * 1024);
-
-		if (currentPitch < 0)
-			currentPitch = -notePitch;
-		else
-			currentPitch = notePitch;
+		samplePlayer.setVolume((int) (finalVol * 255));
 	}
 
-	int vibPos = 0;
-	int vibSweepPos = 0;
-	void doVibrato() {
-		int delta = 0;
+	private void updatePanning() {
+		finalPan = panning;
+		if (panningEnvelope.use()) {
+			float panEnv = panningEnvelope.getValue();
 
-		switch (currentInstrument.vibType & 3) {
+			finalPan += (panEnv - 32) * (128 - Math.abs(panning - 128)) / 32.0f;
+		}
+		samplePlayer.setPanning( (int) ((finalPan / 256.0f) * 255));
+	}
+
+	public final void tick() {
+		if (!active || currentInstrument == null) return;
+		updateVolume();
+		updatePanning();
+
+		period = getPeriod(currentNote);
+
+		doVibrato();
+
+		// TODO: this should be somewhere else...
+		int notePitch = (int) (((freq+freqDelta) / (double) mod.getDeviceSampleRate()) * 1024);
+
+		if (samplePlayer.getPitch() < 0)
+			samplePlayer.setPitch(-notePitch);
+		else
+			samplePlayer.setPitch(notePitch);
+	}
+
+	private int vibPos = 0;
+	private int vibSweepPos = 0;
+	private void doVibrato() {
+		int delta = 0;
+		Vibrato vib = currentInstrument.getVibrato();
+
+		switch (vib.getType() & 3) {
 			case 0: delta = (int) (Math.sin(2* Math.PI * vibPos / 256.0f) * 64);
 				break;
 			case 1:
@@ -249,46 +302,24 @@ public class InstrumentManager {
 				break;
 		};
 
-		delta *= currentInstrument.vibDepth;
-		if (currentInstrument.vibSweep != 0)
-			delta = delta * vibSweepPos / currentInstrument.vibSweep;
-		delta >>=6;
+		delta *= vib.getDepth();
+		if (vib.getSweep() != 0)
+			delta = delta * vibSweepPos / vib.getSweep();
+		delta >>=7;
+		delta <<=2;
 
-//		int period = getPeriod(currentNote);
-
-		freq = 8363d * Math.pow(2d, ((6d * 12d * 16d * 4d - period) / (double) (12 * 16 * 4))) + delta;
-//		freq += delta;
+		// TODO: this should be somewhere else...
+		freq = getFreq(currentNote);
+		freq += delta;
 
 		vibSweepPos++;
-		if (vibSweepPos > currentInstrument.vibSweep)
-			vibSweepPos = currentInstrument.vibSweep;
+		if (vibSweepPos > vib.getSweep())
+			vibSweepPos = vib.getSweep();
 
-		vibPos += currentInstrument.vibRate;
+		vibPos += vib.getRate();
 
 		if (vibPos > 255)
 			vibPos -= 256;
 	}
 
 }
-/*
- * ChangeLog:
- * $Log: InstrumentManager.java,v $
- * Revision 1.6  2003/09/01 09:05:14  fredde
- * vibrato, cubic spline etc
- *
- * Revision 1.5  2003/08/23 13:44:59  fredde
- * moved envelope stuff from InstrumentManager to Envelope
- *
- * Revision 1.4  2003/08/23 07:35:25  fredde
- * porta implemented, volumeenvelope fixes, release fixes
- *
- * Revision 1.3  2003/08/22 12:39:07  fredde
- * volume envelopfix
- *
- * Revision 1.2  2003/08/22 06:54:49  fredde
- * loop fixes
- *
- * Revision 1.1  2003/08/21 09:25:35  fredde
- * moved instrument-playing from Channel into InstrumentManager
- *
- */

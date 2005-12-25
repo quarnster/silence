@@ -4,12 +4,13 @@ silence
 silence is an effort to create a pure java music player for various music
 formats.
 
-silence homepage:	http://www.gjt.org/~fredde/silence/
+silence homepage:	http://silence.sf.net
 
 Libraries used by silence:
 
 MuhmuAudio              http://www.sourceforge.net/projects/muhmuaudio/
 JOrbis                  http://www.jcraft.com/jorbis/
+JLayer			http://www.javazoom.net/javalayer/javalayer.html
 
-silence is Copyright (c) 2000-2001 Fredrik Ehnbom
+silence is Copyright (c) 2000-2005 Fredrik Ehnbom and contributors
 Everything else mentioned here is copyrighted by their respective authors.

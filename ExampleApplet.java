@@ -1,5 +1,5 @@
 /* ExampleApplet.java - an example applet
- * Copyright (C) 2001 Fredrik Ehnbom
+ * Copyright (C) 2001-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,8 @@
 import java.applet.Applet;
 import java.awt.*;
 
-import org.gjt.fredde.silence.*;
-import org.gjt.fredde.silence.format.*;
+import silence.*;
+import silence.format.*;
 
 
 /**

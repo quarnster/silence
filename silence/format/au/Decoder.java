@@ -1,5 +1,5 @@
 /* Decoder.java - The abstract decoder class
- * Copyright (C) 2001 Fredrik Ehnbom
+ * Copyright (C) 2001-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,22 +15,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format.au;
+package silence.format.au;
 
 /**
  * The abstract decoder class
  *
  * @author Fredrik Ehnbom
- * @version $Id: Decoder.java,v 1.1 2001/01/06 10:41:47 fredde Exp $
  */
 abstract class Decoder {
 
 	abstract int[] decode(byte[] source);
 }
-/*
- * ChangeLog:
- * $Log: Decoder.java,v $
- * Revision 1.1  2001/01/06 10:41:47  fredde
- * au decoders
- *
- */

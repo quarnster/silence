@@ -1,5 +1,5 @@
 /* Silence.java - The basic class for silence
- * Copyright (C) 2000-2001 Fredrik Ehnbom
+ * Copyright (C) 2000-2004 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,20 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.gjt.fredde.silence;
+package silence;
 
 import java.awt.Component;
 import java.util.*;
 
 import org.komplex.audio.*;
 
-import org.gjt.fredde.silence.format.AudioFormat;
+import silence.format.AudioFormat;
 
 /**
  * The basic class for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: Silence.java,v 1.7 2003/09/01 09:02:39 fredde Exp $
  */
 public class Silence
 	implements AudioConstants
@@ -201,29 +200,3 @@ public class Silence
 		device.stop();
 	}
 }
-/*
- * ChangeLog:
- * $Log: Silence.java,v $
- * Revision 1.7  2003/09/01 09:02:39  fredde
- * AudioException update
- *
- * Revision 1.6  2002/04/27 14:49:40  fredde
- * added patch for .gz-files by Henrik Raula
- *
- * Revision 1.5  2001/01/27 18:17:02  fredde
- * removed that ridiculous nosound mode
- *
- * Revision 1.4  2001/01/11 20:23:23  fredde
- * Added getDevice method
- *
- * Revision 1.3  2001/01/06 10:39:48  fredde
- * added the setDevice method
- *
- * Revision 1.2  2000/09/29 19:36:56  fredde
- * removed unused stuff, added javadoc comments
- * and some new functions
- *
- * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
- * initial commit
- *
- */

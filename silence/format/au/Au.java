@@ -1,5 +1,5 @@
 /* Au.java - Loading and playing .au-files
- * Copyright (C) 2000-2001 Fredrik Ehnbom
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,12 +15,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format.au;
+package silence.format.au;
 
 import java.io.*;
 
-import org.gjt.fredde.silence.format.*;
-
+import silence.format.*;
 import org.komplex.audio.*;
 
 /**
@@ -29,7 +28,6 @@ import org.komplex.audio.*;
  * can find at http://www.wotsit.org
  *
  * @author Fredrik Ehnbom
- * @version $Id: Au.java,v 1.7 2003/08/22 07:00:53 fredde Exp $
  */
 public class Au
 	extends AudioFormat
@@ -165,29 +163,3 @@ public class Au
 		return "AU";
 	}
 }
-/*
- * ChangeLog:
- * $Log: Au.java,v $
- * Revision 1.7  2003/08/22 07:00:53  fredde
- * correct pitch handling
- *
- * Revision 1.6  2001/01/11 20:25:37  fredde
- * added custom toString
- *
- * Revision 1.5  2001/01/08 19:49:35  fredde
- * updated now that the AudioFormat just saves the device
- * instead of lots of data in different variables
- *
- * Revision 1.4  2001/01/06 10:41:15  fredde
- * streams data, stereo working, using decoders
- *
- * Revision 1.3  2000/12/21 17:16:00  fredde
- * load(is) is public
- *
- * Revision 1.2  2000/09/29 19:39:22  fredde
- * we do not care about volume anymore
- *
- * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
- * initial commit
- *
- */

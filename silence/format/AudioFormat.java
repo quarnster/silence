@@ -1,5 +1,5 @@
 /* AudioFormat.java - The basic AudioFormat class
- * Copyright (C) 2000-2001 Fredrik Ehnbom
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format;
+package silence.format;
 
 import java.io.*;
 import java.net.URL;
@@ -32,7 +32,6 @@ import org.komplex.audio.*;
  * for, lets say, .mp3-files this is the class to extend.
  *
  * @author Fredrik Ehnbom
- * @version $Id: AudioFormat.java,v 1.8 2003/08/22 12:40:11 fredde Exp $
  */
 public abstract class AudioFormat
 	implements PullAudioSource
@@ -46,9 +45,10 @@ public abstract class AudioFormat
 
 	static {
 		// put all supported formats to the format list
-		flist.put(".xm", "org.gjt.fredde.silence.format.xm.Xm");
-		flist.put(".au", "org.gjt.fredde.silence.format.au.Au");
-		flist.put(".ogg", "org.gjt.fredde.silence.format.ogg.Ogg");
+		flist.put(".xm", "silence.format.xm.Xm");
+		flist.put(".au", "silence.format.au.Au");
+		flist.put(".ogg", "silence.format.ogg.Ogg");
+		flist.put(".mp3", "silence.format.mp3.Mp3");
 	}
 
 	/**
@@ -150,33 +150,3 @@ public abstract class AudioFormat
 		this.device = device;
 	}
 }
-/*
- * ChangeLog:
- * $Log: AudioFormat.java,v $
- * Revision 1.8  2003/08/22 12:40:11  fredde
- * now supports .gz-loading from local files also
- *
- * Revision 1.7  2002/04/27 14:49:32  fredde
- * added patch for .gz-files by Henrik Raula
- *
- * Revision 1.6  2001/01/11 20:24:29  fredde
- * removed throws IOException from the close method
- *
- * Revision 1.5  2001/01/08 19:47:52  fredde
- * makes more sense to save the actual device instead
- * of lots of variables
- *
- * Revision 1.4  2001/01/04 18:53:46  fredde
- * added ogg and the close method
- *
- * Revision 1.3  2000/12/21 17:15:00  fredde
- * added protected field "channels", made load(is) public
- *
- * Revision 1.2  2000/09/29 19:38:43  fredde
- * Added some more javadoc, removed
- * unused stuff and made some methods final
- *
- * Revision 1.1.1.1  2000/09/25 16:34:34  fredde
- * initial commit
- *
- */

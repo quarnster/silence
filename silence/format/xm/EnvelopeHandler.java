@@ -1,5 +1,5 @@
-/* $Id: Envelope.java,v 1.1 2003/08/23 13:44:59 fredde Exp $
- * Copyright (C) 2000-2003 Fredrik Ehnbom
+/* EnvelopeHandler.java - Handles envelopes
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,80 +15,71 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.gjt.fredde.silence.format.xm;
+package silence.format.xm;
 
 import java.awt.Point;
+import silence.format.xm.data.Envelope;
+
 /**
  * This class handles envelopes
  *
  * @author Fredrik Ehnbom
- * @version $Revision: 1.1 $
  */
-public class Envelope {
+class EnvelopeHandler {
 
-	private Point[]		data;
+	private Envelope	envelope;
 	private boolean		enabled		= false;
 	private boolean		release		= false;
 	private boolean		sustain		= false;
 
 	private float		kadd		= 0;
 	private float		value		= 64;
-	private int		loopStart	= 0;
-	private int		loopLen		= 0;
+
 	private int		length		= 0;
-	private int		type		= 0;
 	private int		pos		= 0;
-	private int		sustainPos	= 0;
 
 	public void release() {
 		release = true;
 	}
 
 	public boolean use() {
-		return (type & 0x1) != 0;
+		return envelope.isOn();
 	}
 
 	public void reset() {
+		if (envelope == null) enabled = false;
 		pos = 0;
-		enabled = (type & 0x1) != 0;
-		sustain = (pos == sustainPos && (type & 0x2) != 0);
+		enabled = envelope.isOn();
+		sustain = (pos == envelope.getSustainPosition() && (envelope.getType() & Envelope.SUSTAIN) != 0);
 		update();
 		if (!enabled) value = 64;
 		release = false;
 	}
 
-	public void setData(Instrument currentInstrument) {
-		data		= currentInstrument.volumeEnvelopePoints;
-		sustainPos	= currentInstrument.volSustain;
-		type		= currentInstrument.volType;
-
-		if ((type & 0x4) != 0)
-			loopLen = currentInstrument.volLoopEnd;
-		else
-			loopLen = currentInstrument.volumeEnvelopePoints.length - 1;
-
-		loopStart = currentInstrument.volLoopStart;
+	public void setEnvelope(Envelope e) {
+		this.envelope = e;
 		reset();
 	}
 
 	private void update() {
-		if (data.length == 0) return;
+		Point[] data = envelope.getData();
+		if (data == null || data.length == 0) return;
 		value = data[pos].y;
 
 		if (pos+1 != data.length) {
-			kadd = (float) (
-				data[pos + 0].y -
-				data[pos + 1].y
-			) /
-			(float) (
-				data[pos + 0].x -
-				data[pos + 1].x
-			);
-
 			length = (
 					data[pos + 1].x -
 					data[pos + 0].x
 				);
+
+			kadd = (float) (
+				data[pos + 1].y -
+				data[pos + 0].y
+			) /
+			(float) (
+				length
+			);
+
 		} else {
 			enabled = false;
 		}
@@ -100,11 +91,11 @@ public class Envelope {
 			if (length <= 0) {
 				pos++;
 
-				if ((pos == sustainPos && (type & 0x2) != 0)) {
+				if ((pos == envelope.getSustainPosition() && (envelope.getType() & Envelope.SUSTAIN) != 0)) {
 					sustain = true;
-				} else if (pos == loopLen) {
-					if ((type & 0x4) != 0) {
-						pos = loopStart;
+				} else if (pos == envelope.getLoopEnd()) {
+					if ((envelope.getType() & Envelope.LOOP) != 0) {
+						pos = envelope.getLoopStart();
 					} else {
 						enabled = false;
 					}
@@ -117,10 +108,3 @@ public class Envelope {
 	}
 
 }
-/*
- * ChangeLog:
- * $Log: Envelope.java,v $
- * Revision 1.1  2003/08/23 13:44:59  fredde
- * moved envelope stuff from InstrumentManager to Envelope
- *
- */

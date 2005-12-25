@@ -1,5 +1,5 @@
-/* AudioException.java - AudioException
- * Copyright (C) 2000-2004 Fredrik Ehnbom
+/* Vibrato.java - handles vibrato data
+ * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,36 +15,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package silence.format.xm.data;
 
-package silence;
+import java.io.*;
 
 /**
- * AudioException
+ * Stores vibrato data
  *
  * @author Fredrik Ehnbom
  */
-public class AudioException
-	extends Exception
-{
+public class Vibrato {
+	private int		type;
+	private int		sweep;
+	private int		depth;
+	private int		rate;
 
-	private Exception exception = null;
+	public int getType() { return type; }
+	public void setType(int t) { type = t; }
 
-	/**
-	 * Creates a new AudioException
-	 */
-	public AudioException(String exception) {
-		super(exception);
-	}
+	public void setSweep(int s) { sweep = s; }
+	public int getSweep() { return sweep; }
 
-	public AudioException(Exception e) {
-		super(e.toString());
-		exception = e;
-	}
+	public void setDepth(int s) { depth = s; }
+	public int getDepth() { return depth; }
 
-	public void printStackTrace() {
-		if (exception != null) {
-			exception.printStackTrace();
-		}
-		super.printStackTrace();
-	}
+	public void setRate(int s) { rate = s; }
+	public int getRate() { return rate; }
 }

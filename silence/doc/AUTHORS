@@ -8,3 +8,11 @@ Henrik Raula <henrik.raula@lailanet.fi>
 Some libraries are also used by silence. In the "README" file you can see a list
 of these libraries and their respective homepages. Please go to the hompages of
 the libraries to see whom wrote them.
+
+Also the following text documents have been very helpful in the develop of mod
+playing capabilities:
+
+fmoddoc.txt and fs3mdoc.txt by Brett Paterson
+modfil11.txt by "Thunder" and Erland Van Olmen
+xm-form.txt by Matti Hamalainen
+xm.txt by Fredrik Huss
