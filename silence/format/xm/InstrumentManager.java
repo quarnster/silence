@@ -1,4 +1,4 @@
-/* $Id: InstrumentManager.java,v 1.1 2005/12/25 21:56:09 quarn Exp $
+/* $Id: InstrumentManager.java,v 1.2 2005/12/27 15:41:46 quarn Exp $
  * Copyright (C) 2000-2005 Fredrik Ehnbom
  *
  * This library is free software; you can redistribute it and/or
@@ -186,6 +186,7 @@ class InstrumentManager {
 		porta = 0;
 		samplePlayer.setPosition(0);
 		samplePlayer.setPitch(0); // just to reset pingpong
+		active = true;
 	}
 
 	public void play(int[] left, int[] right, int off, int len) {
