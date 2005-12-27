@@ -1,0 +1,10 @@
+Copyright (c) 2000-2005 Fredrik Ehnbom
+
+Uses Muhmuaudio for Audio Devices:
+www.sf.net/projects/muhmuaudio
+
+Uses jOrbis for .ogg playing:
+http://www.jcraft.com/jorbis/
+
+Uses JLayer for .mp3 playing:
+http://www.javazoom.net/javalayer/javalayer.html

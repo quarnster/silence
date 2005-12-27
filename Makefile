@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.1 2005/12/25 21:56:08 quarn Exp $
+# $Id: Makefile,v 1.2 2005/12/27 16:42:16 quarn Exp $
 #
 
 MuhmuAudioDir = ../muhmuaudio
@@ -61,7 +61,7 @@ dist: all tests javadoc
 
 jar: all
 	jar cvf silence.jar \
-	`find silence/ -regex .*.class -print`
+	`find -regex .*.class -print`
 	cd $(MuhmuAudioDir) && \
 	jar uvf $(silenceDir)/silence.jar `find -name "*.class" -print`
 	cd $(JLayerDir) && \

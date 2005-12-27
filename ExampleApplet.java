@@ -27,7 +27,7 @@ import silence.format.*;
  * An example applet for silence.
  *
  * @author Fredrik Ehnbom
- * @version $Id: ExampleApplet.java,v 1.1 2005/12/25 21:56:08 quarn Exp $
+ * @version $Id: ExampleApplet.java,v 1.2 2005/12/27 16:42:16 quarn Exp $
  */
 public class ExampleApplet
 	extends Applet
@@ -91,11 +91,11 @@ public class ExampleApplet
 	}
 
 	public void paint(Graphics g) {
-		g.setColor(new Color(224, 224, 224));
+		g.setColor(Color.BLACK);
 		Dimension d = getSize();
 		g.fillRect(0, 0, d.width, d.height);
 
-		g.setColor(Color.black);
+		g.setColor(new Color(255,255,255));
 		for (int i = 0; i < text.length; i++) {
 			if (text[i] == null) continue;
 
@@ -106,8 +106,11 @@ public class ExampleApplet
 /*
  * ChangeLog:
  * $Log: ExampleApplet.java,v $
- * Revision 1.1  2005/12/25 21:56:08  quarn
- * Initial revision
+ * Revision 1.2  2005/12/27 16:42:16  quarn
+ * some fixes
+ *
+ * Revision 1.1.1.1  2005/12/25 21:56:08  quarn
+ * files moved to sf again since gjt isn't really maintained
  *
  * Revision 1.2  2001/01/27 18:18:01  fredde
  * some fixes
